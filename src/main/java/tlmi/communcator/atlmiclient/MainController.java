@@ -47,32 +47,37 @@ public class MainController {
     private final IMainView view;
     private final AppEnvironmentVariableHandler env;
     private final ScreenMessageHandler screenMessageHandler;
+    private final ServerConfig serverConfig;
     private WebSocketClient webSocketClient;
 
     public MainController(IMainView view) {
-        this.view = view;
-        this.env = new AppEnvironmentVariableHandler();
-        this.screenMessageHandler = new ScreenMessageHandler();
+        this(view, false, ServerConfig.production());
     }
 
     public MainController(IMainView view, boolean cliMode) {
+        this(view, cliMode, ServerConfig.production());
+    }
+
+    public MainController(IMainView view, boolean cliMode, ServerConfig serverConfig) {
         this.view = view;
         this.env = new AppEnvironmentVariableHandler();
         this.screenMessageHandler = new ScreenMessageHandler(cliMode);
+        this.serverConfig = serverConfig;
+        LOG.trace("ServerConfig: {}", serverConfig);
     }
 
     public void initialize() {
         LOG.trace(">>> initialize() START");
 
         // Check internet
-        LOG.trace("step 1: checking internet connection...");
+        LOG.trace("step 1: checking server connection...");
         if (checkInternet()) {
             view.setInternetStatus(true);
-            trace("you have internet connection");
+            trace("server is reachable");
         } else {
             view.setInternetStatus(false);
-            trace("you do not have internet connection");
-            screenMessageHandler.errorNotifying("Connect to the internet!");
+            trace("server is not reachable");
+            screenMessageHandler.errorNotifying("Cannot reach server: " + serverConfig.getGateServiceUrl());
         }
 
         // Set user ID and locale
@@ -88,18 +93,20 @@ public class MainController {
         env.getUserCountry().set(locale.getCountry());
         env.disableTextToSpeechDisabler();
 
-        // Check/create user
-        LOG.trace("step 3: checking if user exists...");
+        // Check/create user on user service (graceful — may not be available)
+        LOG.trace("step 3: checking if user exists on user service...");
         GetTranslateUserByNameResponse checkResponse =
                 tryGetTranslateUserByName(new GetTranslateUserByNameRequest(env.getUserId().get()));
 
         if (checkResponse.itWasFailed()) {
-            LOG.trace("step 3a: user not found, creating...");
+            LOG.trace("step 3a: user not found on user service (or service unavailable), creating on gate...");
             TlmiTranslateUser tlmiTranslateUser = new TlmiTranslateUser();
             tlmiTranslateUser.setName(env.getUserId().get());
             tlmiTranslateUser.setPassword("1");
 
+            // Try user service insert (may fail if not available)
             tryInsertUser(new InsertUserRequest(tlmiTranslateUser));
+            // Gate insert (should work on localhost)
             tryGateInsertUser(new GateInsertUserRequest(tlmiTranslateUser.getName(), tlmiTranslateUser.getPassword()));
         }
 
@@ -107,7 +114,7 @@ public class MainController {
         tryGateInsertUser(new GateInsertUserRequest(env.getUserId().get(), "1"));
 
         // Login
-        LOG.trace("step 4: logging in...");
+        LOG.trace("step 4: logging in via gate...");
         GateLoginResponse loginResponse = tryLogin(new GateLoginRequest(env.getUserId().get(), "1"));
 
         if (loginResponse.getResult().itWasSuccessful()) {
@@ -124,11 +131,11 @@ public class MainController {
         LOG.trace("step 5: connecting websocket...");
         connectWebSocket();
 
-        // Load partners
+        // Load partners (graceful — user service may not be available)
         LOG.trace("step 6: loading partners...");
         loadPartners();
 
-        // Load self info
+        // Load self info (graceful — user service may not be available)
         LOG.trace("step 7: loading self info...");
         loadSelfInfo();
 
@@ -144,16 +151,18 @@ public class MainController {
     }
 
     private boolean checkInternet() {
-        LOG.trace("checkInternet: HEAD https://client.ac4y.com");
+        String healthUrl = serverConfig.getHealthCheckUrl();
+        LOG.trace("checkInternet: GET {}", healthUrl);
         try {
-            java.net.URL url = new java.net.URL("https://client.ac4y.com");
+            java.net.URL url = new java.net.URL(healthUrl);
             java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("HEAD");
+            connection.setRequestMethod("GET");
             connection.setConnectTimeout(3000);
             connection.connect();
+            int code = connection.getResponseCode();
             connection.disconnect();
-            LOG.trace("checkInternet: OK");
-            return true;
+            LOG.trace("checkInternet: OK (HTTP {})", code);
+            return code >= 200 && code < 400;
         } catch (Exception e) {
             LOG.trace("checkInternet: FAILED ({})", e.getMessage());
             return false;
@@ -161,20 +170,35 @@ public class MainController {
     }
 
     private void loadPartners() {
-        LOG.trace("loadPartners: fetching all users from https://client.ac4y.com");
-        GetAllTranslateUsersResponse allUsersResponse =
-                new TlmiUserServiceClient("https://client.ac4y.com").getAllTranslateUsers();
+        LOG.trace("loadPartners: fetching all users from {}", serverConfig.getUserServiceUrl());
+        try {
+            GetAllTranslateUsersResponse allUsersResponse =
+                    new TlmiUserServiceClient(serverConfig.getUserServiceUrl()).getAllTranslateUsers();
 
-        int count = 0;
-        for (TlmiTranslateUser partner : allUsersResponse.list) {
-            if (!partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
-                view.addPartner(partner.getName(), partner.getHumanName(), partner.getAvatar());
-                count++;
+            if (allUsersResponse.list == null) {
+                LOG.trace("loadPartners: user service returned null list (service may not support this endpoint)");
+                trace("partner list not available (user service not running)");
+                setupPartnerSelectionListener();
+                return;
             }
-        }
-        LOG.trace("loadPartners: {} partners added", count);
 
-        // Partner click handler
+            int count = 0;
+            for (TlmiTranslateUser partner : allUsersResponse.list) {
+                if (!partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
+                    view.addPartner(partner.getName(), partner.getHumanName(), partner.getAvatar());
+                    count++;
+                }
+            }
+            LOG.trace("loadPartners: {} partners added", count);
+        } catch (Exception e) {
+            LOG.trace("loadPartners: FAILED ({})", e.getMessage());
+            trace("partner list not available: " + e.getMessage());
+        }
+
+        setupPartnerSelectionListener();
+    }
+
+    private void setupPartnerSelectionListener() {
         view.setPartnerSelectionListener(partnerData -> {
             String name = partnerData[0];
             String avatar = partnerData[2];
@@ -194,22 +218,28 @@ public class MainController {
     }
 
     private void loadSelfInfo() {
-        LOG.trace("loadSelfInfo: fetching own profile");
-        GetTranslateUserByNameResponse response =
-                tryGetTranslateUserByName(new GetTranslateUserByNameRequest(env.getUserId().get()));
+        LOG.trace("loadSelfInfo: fetching own profile from {}", serverConfig.getUserServiceUrl());
+        try {
+            GetTranslateUserByNameResponse response =
+                    tryGetTranslateUserByName(new GetTranslateUserByNameRequest(env.getUserId().get()));
 
-        if (response.itWasSuccessful()) {
-            env.getUserAvatar().set(response.getObject().getAvatar());
+            if (response.itWasSuccessful()) {
+                env.getUserAvatar().set(response.getObject().getAvatar());
 
-            view.setSelfName(
-                    response.getObject().getHumanName()
-                            + " (" + env.getUserLanguage().get() + ")"
-            );
+                view.setSelfName(
+                        response.getObject().getHumanName()
+                                + " (" + env.getUserLanguage().get() + ")"
+                );
 
-            view.setSelfAvatar(env.getUserAvatar().get());
-            LOG.trace("loadSelfInfo: profile loaded");
-        } else {
-            LOG.trace("loadSelfInfo: failed to load profile");
+                view.setSelfAvatar(env.getUserAvatar().get());
+                LOG.trace("loadSelfInfo: profile loaded");
+            } else {
+                LOG.trace("loadSelfInfo: failed to load profile (user service may not be available)");
+                view.setSelfName(env.getUserId().get() + " (" + env.getUserLanguage().get() + ")");
+            }
+        } catch (Exception e) {
+            LOG.trace("loadSelfInfo: FAILED ({})", e.getMessage());
+            view.setSelfName(env.getUserId().get() + " (" + env.getUserLanguage().get() + ")");
         }
     }
 
@@ -218,8 +248,8 @@ public class MainController {
     private void connectWebSocket() {
         URI uri;
         try {
-            String user = env.getUserId().get();
-            uri = new URI("wss://www.ac4y.com:2222/" + user);
+            String wsUri = serverConfig.getWebsocketUri(env.getUserId().get());
+            uri = new URI(wsUri);
             LOG.trace("connectWebSocket: URI={}", uri);
         } catch (URISyntaxException e) {
             LOG.error("connectWebSocket: invalid URI", e);
@@ -408,9 +438,9 @@ public class MainController {
     // --- Service calls ---
 
     public GetTranslateUserByNameResponse tryGetTranslateUserByName(GetTranslateUserByNameRequest request) {
-        LOG.trace("API CALL: TlmiUserServiceClient.getTranslateUserByName({})", request.getName());
+        LOG.trace("API CALL: TlmiUserServiceClient.getTranslateUserByName({}) -> {}", request.getName(), serverConfig.getUserServiceUrl());
         GetTranslateUserByNameResponse response =
-                new TlmiUserServiceClient("https://client.ac4y.com").getTranslateUserByName(request);
+                new TlmiUserServiceClient(serverConfig.getUserServiceUrl()).getTranslateUserByName(request);
         if (response.itWasFailed()) {
             LOG.trace("API RESULT: getTranslateUserByName FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
@@ -421,9 +451,9 @@ public class MainController {
     }
 
     public InsertUserResponse tryInsertUser(InsertUserRequest request) {
-        LOG.trace("API CALL: TlmiUserServiceClient.insertUser()");
+        LOG.trace("API CALL: TlmiUserServiceClient.insertUser() -> {}", serverConfig.getUserServiceUrl());
         InsertUserResponse response =
-                new TlmiUserServiceClient("https://client.ac4y.com").insertUser(request);
+                new TlmiUserServiceClient(serverConfig.getUserServiceUrl()).insertUser(request);
         if (response.itWasFailed()) {
             LOG.trace("API RESULT: insertUser FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
@@ -434,9 +464,9 @@ public class MainController {
     }
 
     public GateInsertUserResponse tryGateInsertUser(GateInsertUserRequest request) {
-        LOG.trace("API CALL: Ac4yGateServiceClient.insertUser() -> https://gate.ac4y.com");
+        LOG.trace("API CALL: Ac4yGateServiceClient.insertUser() -> {}", serverConfig.getGateServiceUrl());
         GateInsertUserResponse response =
-                new Ac4yGateServiceClient("https://gate.ac4y.com").insertUser(request);
+                new Ac4yGateServiceClient(serverConfig.getGateServiceUrl()).insertUser(request);
         if (response.itWasFailed()) {
             LOG.trace("API RESULT: gateInsertUser FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
@@ -447,9 +477,9 @@ public class MainController {
     }
 
     public Text2TextResponse tryText2Text(Text2TextRequest request) {
-        LOG.trace("API CALL: TlmiServiceClient.text2text() -> https://api.ac4y.com");
+        LOG.trace("API CALL: TlmiServiceClient.text2text() -> {}", serverConfig.getTranslationServiceUrl());
         Text2TextResponse response =
-                new TlmiServiceClient("https://api.ac4y.com").text2text(request);
+                new TlmiServiceClient(serverConfig.getTranslationServiceUrl()).text2text(request);
         if (response.itWasFailed()) {
             LOG.trace("API RESULT: text2text FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
@@ -460,9 +490,9 @@ public class MainController {
     }
 
     public GateLoginResponse tryLogin(GateLoginRequest request) {
-        LOG.trace("API CALL: Ac4yGateServiceClient.login() -> https://gate.ac4y.com");
+        LOG.trace("API CALL: Ac4yGateServiceClient.login() -> {}", serverConfig.getGateServiceUrl());
         GateLoginResponse response =
-                new Ac4yGateServiceClient("https://gate.ac4y.com").login(request);
+                new Ac4yGateServiceClient(serverConfig.getGateServiceUrl()).login(request);
         if (response.itWasFailed()) {
             LOG.trace("API RESULT: login FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());

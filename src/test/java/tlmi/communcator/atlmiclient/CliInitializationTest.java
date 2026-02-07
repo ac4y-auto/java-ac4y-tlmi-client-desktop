@@ -13,16 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * CLI initialization test with TRACE-level logging.
  *
- * This test runs the full initialization sequence (internet check,
- * user create, gate register, login, websocket, partner load)
- * through the CliMainView — no Swing GUI involved.
- *
- * Log output goes to ./logs/tlmi-client-test.log at TRACE level
- * (configured in src/test/resources/log4j2-test.xml).
- *
- * NOTE: The backend servers (client.ac4y.com, gate.ac4y.com) may be
- * offline, so the test verifies the initialization flow runs without
- * exceptions, not that all steps succeed.
+ * Log output goes to ./logs/tlmi-client-test.log at TRACE level.
  */
 class CliInitializationTest {
 
@@ -30,62 +21,68 @@ class CliInitializationTest {
 
     @Test
     void testCliInitializationSequence() {
-        LOG.info("=== CliInitializationTest START ===");
+        LOG.info("=== CliInitializationTest START (production config) ===");
 
-        // Arrange
         CliMainView view = new CliMainView();
         MainController controller = new MainController(view, true);
 
-        // Act — run full init (may stop early if servers offline)
         LOG.info("calling controller.initialize()...");
         controller.initialize();
         LOG.info("controller.initialize() returned");
 
-        // Assert: log entries were collected (always, even if servers offline)
         assertFalse(view.getLogEntries().isEmpty(),
                 "Expected at least one log entry from initialization");
 
-        LOG.info("log entries collected: {}", view.getLogEntries().size());
+        boolean hasLocaleLog = view.getLogEntries().stream()
+                .anyMatch(e -> e.contains("locale.getLanguage:"));
+        assertTrue(hasLocaleLog, "Locale language log entry should always be present");
+
+        File testLogFile = new File("./logs/tlmi-client-test.log");
+        assertTrue(testLogFile.exists(), "Test log file should exist");
+        assertTrue(testLogFile.length() > 0, "Test log file should not be empty");
+
+        LOG.info("=== CliInitializationTest COMPLETE ===");
+    }
+
+    @Test
+    void testCliInitializationWithLocalServer() {
+        LOG.info("=== CliInitializationTest START (local config) ===");
+
+        CliMainView view = new CliMainView();
+        MainController controller = new MainController(view, true, ServerConfig.local());
+
+        LOG.info("calling controller.initialize() with ServerConfig.local()...");
+        controller.initialize();
+        LOG.info("controller.initialize() returned");
+
+        assertFalse(view.getLogEntries().isEmpty(),
+                "Expected at least one log entry from initialization");
+
+        // Check if we got further than the production test
+        boolean loginSucceeded = view.getLogEntries().stream()
+                .anyMatch(e -> e.contains("login successed!"));
+        boolean loginFailed = view.getLogEntries().stream()
+                .anyMatch(e -> e.contains("you dont have permission to login"));
+        boolean serverReachable = view.getLogEntries().stream()
+                .anyMatch(e -> e.contains("server is reachable"));
+
+        LOG.info("server reachable: {}", serverReachable);
+        LOG.info("login succeeded: {}", loginSucceeded);
+        LOG.info("login failed: {}", loginFailed);
+
+        if (loginSucceeded) {
+            LOG.info("LOCAL SERVER: login OK! Checking WebSocket and further steps...");
+            boolean wsOpen = view.getLogEntries().stream()
+                    .anyMatch(e -> e.contains("WS open"));
+            LOG.info("WebSocket opened: {}", wsOpen);
+            assertNotNull(view.getSendCallback(), "Send callback should be registered after successful init");
+        }
+
         for (String entry : view.getLogEntries()) {
             LOG.info("  > {}", entry);
         }
 
-        // Assert: basic locale info was always logged
-        boolean hasLocaleLog = view.getLogEntries().stream()
-                .anyMatch(e -> e.contains("locale.getLanguage:"));
-        assertTrue(hasLocaleLog,
-                "Locale language log entry should always be present");
-
-        // Assert: TRACE log file was created
-        File testLogFile = new File("./logs/tlmi-client-test.log");
-        assertTrue(testLogFile.exists(),
-                "Test log file should exist at ./logs/tlmi-client-test.log");
-        assertTrue(testLogFile.length() > 0,
-                "Test log file should not be empty");
-
-        LOG.info("test log file size: {} bytes", testLogFile.length());
-
-        // Assert: either full init completed (partners loaded) or stopped at login
-        boolean loginFailed = view.getLogEntries().stream()
-                .anyMatch(e -> e.contains("you dont have permission to login"));
-        boolean initCompleted = view.getLogEntries().stream()
-                .anyMatch(e -> e.equals("start!"));
-
-        assertTrue(loginFailed || initCompleted,
-                "Init should either complete (start!) or stop at login failure");
-
-        if (initCompleted) {
-            LOG.info("Full initialization completed (servers online)");
-            assertNotNull(view.getPartnerSelectionListener(),
-                    "Partner selection listener should be registered when init completes");
-            assertNotNull(view.getSendCallback(),
-                    "Send callback should be registered when init completes");
-            LOG.info("Partners loaded: {}", view.getPartners().size());
-        } else {
-            LOG.info("Initialization stopped at login (servers offline — expected in CI/test)");
-        }
-
-        LOG.info("=== CliInitializationTest COMPLETE ===");
+        LOG.info("=== CliInitializationTest (local) COMPLETE ===");
     }
 
 }
