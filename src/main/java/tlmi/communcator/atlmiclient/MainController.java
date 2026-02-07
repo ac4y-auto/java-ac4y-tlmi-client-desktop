@@ -15,12 +15,10 @@ import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.UUID;
 
-import javax.swing.SwingUtilities;
-
-import ac4y.base.domain.Ac4y;
 import ac4y.command.domain.Ac4yCommand;
 import ac4y.command.message.domain.Ac4yCMDMessage;
 import ac4y.command.service.domain.Ac4yCMDServiceResponse;
+import ac4y.base.domain.Ac4y;
 import ac4y.gate.service.client.Ac4yGateServiceClient;
 import ac4y.gate.service.domain.GateInsertUserRequest;
 import ac4y.gate.service.domain.GateInsertUserResponse;
@@ -29,11 +27,8 @@ import ac4y.gate.service.domain.GateLoginResponse;
 import tlmi.communcator.atlmiclient.command.domain.TlmiCMDInvitation;
 import tlmi.communcator.atlmiclient.command.domain.TlmiCMDInvitationAccept;
 import tlmi.communcator.atlmiclient.command.domain.TlmiMessage;
-import tlmi.communcator.atlmiclient.model.ChatEvent;
-import tlmi.communcator.atlmiclient.ui.ImageUtil;
-import tlmi.communcator.atlmiclient.ui.MainFrame;
-import tlmi.communcator.atlmiclient.ui.PartnerListPanel;
 import tlmi.communcator.atlmiclient.utility.ScreenMessageHandler;
+import tlmi.communcator.atlmiclient.view.IMainView;
 import tlmi.service.client.TlmiServiceClient;
 import tlmi.service.domain.Text2TextRequest;
 import tlmi.service.domain.Text2TextResponse;
@@ -49,30 +44,41 @@ public class MainController {
 
     private static final Logger LOG = LogManager.getLogger(MainController.class);
 
-    private final MainFrame frame;
+    private final IMainView view;
     private final AppEnvironmentVariableHandler env;
     private final ScreenMessageHandler screenMessageHandler;
     private WebSocketClient webSocketClient;
 
-    public MainController(MainFrame frame) {
-        this.frame = frame;
+    public MainController(IMainView view) {
+        this.view = view;
         this.env = new AppEnvironmentVariableHandler();
         this.screenMessageHandler = new ScreenMessageHandler();
     }
 
+    public MainController(IMainView view, boolean cliMode) {
+        this.view = view;
+        this.env = new AppEnvironmentVariableHandler();
+        this.screenMessageHandler = new ScreenMessageHandler(cliMode);
+    }
+
     public void initialize() {
+        LOG.trace(">>> initialize() START");
+
         // Check internet
+        LOG.trace("step 1: checking internet connection...");
         if (checkInternet()) {
-            frame.getStatusBar().internetLive();
+            view.setInternetStatus(true);
             trace("you have internet connection");
         } else {
-            frame.getStatusBar().internetError();
+            view.setInternetStatus(false);
             trace("you do not have internet connection");
             screenMessageHandler.errorNotifying("Connect to the internet!");
         }
 
         // Set user ID and locale
+        LOG.trace("step 2: setting up user identity...");
         env.getUserId().getSet(UUID.randomUUID().toString());
+        LOG.trace("userId generated: {}", env.getUserId().get());
 
         Locale locale = Locale.getDefault();
         trace("locale.getCountry:" + locale.getCountry());
@@ -83,10 +89,12 @@ public class MainController {
         env.disableTextToSpeechDisabler();
 
         // Check/create user
+        LOG.trace("step 3: checking if user exists...");
         GetTranslateUserByNameResponse checkResponse =
                 tryGetTranslateUserByName(new GetTranslateUserByNameRequest(env.getUserId().get()));
 
         if (checkResponse.itWasFailed()) {
+            LOG.trace("step 3a: user not found, creating...");
             TlmiTranslateUser tlmiTranslateUser = new TlmiTranslateUser();
             tlmiTranslateUser.setName(env.getUserId().get());
             tlmiTranslateUser.setPassword("1");
@@ -95,43 +103,48 @@ public class MainController {
             tryGateInsertUser(new GateInsertUserRequest(tlmiTranslateUser.getName(), tlmiTranslateUser.getPassword()));
         }
 
+        LOG.trace("step 3b: ensuring gate registration...");
         tryGateInsertUser(new GateInsertUserRequest(env.getUserId().get(), "1"));
 
         // Login
+        LOG.trace("step 4: logging in...");
         GateLoginResponse loginResponse = tryLogin(new GateLoginRequest(env.getUserId().get(), "1"));
 
         if (loginResponse.getResult().itWasSuccessful()) {
-            frame.getStatusBar().loginLive();
+            view.setLoginStatus(true);
             trace("login successed!");
         } else {
-            frame.getStatusBar().loginError();
+            view.setLoginStatus(false);
             trace("you dont have permission to login");
+            LOG.trace(">>> initialize() STOPPED (login failed)");
             return;
         }
 
         // Connect WebSocket
+        LOG.trace("step 5: connecting websocket...");
         connectWebSocket();
 
         // Load partners
+        LOG.trace("step 6: loading partners...");
         loadPartners();
 
         // Load self info
+        LOG.trace("step 7: loading self info...");
         loadSelfInfo();
 
         // Setup chat send action
-        frame.getChatPanel().setSendAction(e -> {
-            String text = frame.getChatPanel().getInputText().trim();
-            if (!text.isEmpty()) {
-                sendTlmiMessage(text);
-                frame.getChatPanel().addMessage(new ChatEvent(text, false));
-                frame.getChatPanel().clearInput();
-            }
+        LOG.trace("step 8: setting up chat send action...");
+        view.setSendAction(text -> {
+            sendTlmiMessage(text);
+            view.displayMessage(text, false);
         });
 
         trace("start!");
+        LOG.trace(">>> initialize() COMPLETE");
     }
 
     private boolean checkInternet() {
+        LOG.trace("checkInternet: HEAD https://client.ac4y.com");
         try {
             java.net.URL url = new java.net.URL("https://client.ac4y.com");
             java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
@@ -139,60 +152,64 @@ public class MainController {
             connection.setConnectTimeout(3000);
             connection.connect();
             connection.disconnect();
+            LOG.trace("checkInternet: OK");
             return true;
         } catch (Exception e) {
+            LOG.trace("checkInternet: FAILED ({})", e.getMessage());
             return false;
         }
     }
 
     private void loadPartners() {
+        LOG.trace("loadPartners: fetching all users from https://client.ac4y.com");
         GetAllTranslateUsersResponse allUsersResponse =
                 new TlmiUserServiceClient("https://client.ac4y.com").getAllTranslateUsers();
 
+        int count = 0;
         for (TlmiTranslateUser partner : allUsersResponse.list) {
             if (!partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
-                frame.getPartnerListPanel().addPartner(
-                        new PartnerListPanel.PartnerInfo(partner.getName(), partner.getHumanName(), partner.getAvatar())
-                );
+                view.addPartner(partner.getName(), partner.getHumanName(), partner.getAvatar());
+                count++;
             }
         }
+        LOG.trace("loadPartners: {} partners added", count);
 
         // Partner click handler
-        frame.getPartnerListPanel().getList().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                PartnerListPanel.PartnerInfo user = frame.getPartnerListPanel().getList().getSelectedValue();
-                if (user != null) {
-                    env.getPartnerId().set(user.getName());
-                    env.getPartnerAvatar().set(user.getAvatar());
+        view.setPartnerSelectionListener(partnerData -> {
+            String name = partnerData[0];
+            String avatar = partnerData[2];
 
-                    sendAc4yObjectAsMessage(
-                            new TlmiCMDInvitation(
-                                    env.getUserId().get(),
-                                    env.getUserLanguage().get()
-                            )
-                    );
+            env.getPartnerId().set(name);
+            env.getPartnerAvatar().set(avatar);
 
-                    frame.showPanel(MainFrame.CARD_CHAT);
-                }
-            }
+            sendAc4yObjectAsMessage(
+                    new TlmiCMDInvitation(
+                            env.getUserId().get(),
+                            env.getUserLanguage().get()
+                    )
+            );
+
+            view.showPanel("chat");
         });
     }
 
     private void loadSelfInfo() {
+        LOG.trace("loadSelfInfo: fetching own profile");
         GetTranslateUserByNameResponse response =
                 tryGetTranslateUserByName(new GetTranslateUserByNameRequest(env.getUserId().get()));
 
         if (response.itWasSuccessful()) {
             env.getUserAvatar().set(response.getObject().getAvatar());
 
-            frame.setSelfName(
+            view.setSelfName(
                     response.getObject().getHumanName()
                             + " (" + env.getUserLanguage().get() + ")"
             );
 
-            frame.setSelfAvatar(
-                    ImageUtil.fromBase64(env.getUserAvatar().get())
-            );
+            view.setSelfAvatar(env.getUserAvatar().get());
+            LOG.trace("loadSelfInfo: profile loaded");
+        } else {
+            LOG.trace("loadSelfInfo: failed to load profile");
         }
     }
 
@@ -203,21 +220,22 @@ public class MainController {
         try {
             String user = env.getUserId().get();
             uri = new URI("wss://www.ac4y.com:2222/" + user);
+            LOG.trace("connectWebSocket: URI={}", uri);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            LOG.error("connectWebSocket: invalid URI", e);
             return;
         }
 
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
-                frame.getStatusBar().websocketLive();
+                view.setWebsocketStatus(true);
                 trace("WS open");
             }
 
             @Override
             public void onMessage(String s) {
-                SwingUtilities.invokeLater(() -> processMessage(s));
+                processMessage(s);
             }
 
             @Override
@@ -227,10 +245,8 @@ public class MainController {
 
             @Override
             public void onError(Exception e) {
-                frame.getStatusBar().websocketError();
-                SwingUtilities.invokeLater(() ->
-                        screenMessageHandler.errorNotifying(e.getMessage())
-                );
+                view.setWebsocketStatus(false);
+                screenMessageHandler.errorNotifying(e.getMessage());
             }
         };
         webSocketClient.connect();
@@ -316,7 +332,7 @@ public class MainController {
                     }
                 }
             } catch (Exception exception) {
-                exception.printStackTrace();
+                LOG.error("processMessage error", exception);
             }
         }
     }
@@ -336,19 +352,15 @@ public class MainController {
                 )
         );
 
-        frame.showPanel(MainFrame.CARD_CHAT);
+        view.showPanel("chat");
 
         GetTranslateUserByNameResponse response =
                 tryGetTranslateUserByName(new GetTranslateUserByNameRequest(invitation.getPartner()));
 
         if (response.itWasSuccessful()) {
             env.getPartnerAvatar().set(response.getObject().getAvatar());
-
-            frame.setPartnerAvatar(
-                    ImageUtil.fromBase64(env.getPartnerAvatar().get())
-            );
-
-            frame.setConnected();
+            view.setPartnerAvatar(env.getPartnerAvatar().get());
+            view.setConnected();
         }
     }
 
@@ -366,12 +378,8 @@ public class MainController {
 
         if (response.itWasSuccessful()) {
             env.getPartnerAvatar().set(response.getObject().getAvatar());
-
-            frame.setPartnerAvatar(
-                    ImageUtil.fromBase64(env.getPartnerAvatar().get())
-            );
-
-            frame.setConnected();
+            view.setPartnerAvatar(env.getPartnerAvatar().get());
+            view.setConnected();
         }
     }
 
@@ -393,49 +401,74 @@ public class MainController {
     private void handleTlmiMessage(Ac4yCMDMessage ac4yCMDMessage) {
         TlmiMessage command = (TlmiMessage) new TlmiMessage().getFromJson(ac4yCMDMessage.getRequest().getBody());
         trace("message arrived:" + command.getMessage());
-        frame.getChatPanel().addMessage(new ChatEvent(command.getMessage(), true));
+        view.displayMessage(command.getMessage(), true);
         command.process();
     }
 
     // --- Service calls ---
 
     public GetTranslateUserByNameResponse tryGetTranslateUserByName(GetTranslateUserByNameRequest request) {
+        LOG.trace("API CALL: TlmiUserServiceClient.getTranslateUserByName({})", request.getName());
         GetTranslateUserByNameResponse response =
                 new TlmiUserServiceClient("https://client.ac4y.com").getTranslateUserByName(request);
-        if (response.itWasFailed())
+        if (response.itWasFailed()) {
+            LOG.trace("API RESULT: getTranslateUserByName FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
+        } else {
+            LOG.trace("API RESULT: getTranslateUserByName OK");
+        }
         return response;
     }
 
     public InsertUserResponse tryInsertUser(InsertUserRequest request) {
+        LOG.trace("API CALL: TlmiUserServiceClient.insertUser()");
         InsertUserResponse response =
                 new TlmiUserServiceClient("https://client.ac4y.com").insertUser(request);
-        if (response.itWasFailed())
+        if (response.itWasFailed()) {
+            LOG.trace("API RESULT: insertUser FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
+        } else {
+            LOG.trace("API RESULT: insertUser OK");
+        }
         return response;
     }
 
     public GateInsertUserResponse tryGateInsertUser(GateInsertUserRequest request) {
+        LOG.trace("API CALL: Ac4yGateServiceClient.insertUser() -> https://gate.ac4y.com");
         GateInsertUserResponse response =
                 new Ac4yGateServiceClient("https://gate.ac4y.com").insertUser(request);
-        if (response.itWasFailed())
+        if (response.itWasFailed()) {
+            LOG.trace("API RESULT: gateInsertUser FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
+        } else {
+            LOG.trace("API RESULT: gateInsertUser OK");
+        }
         return response;
     }
 
     public Text2TextResponse tryText2Text(Text2TextRequest request) {
+        LOG.trace("API CALL: TlmiServiceClient.text2text() -> https://api.ac4y.com");
         Text2TextResponse response =
                 new TlmiServiceClient("https://api.ac4y.com").text2text(request);
-        if (response.itWasFailed())
+        if (response.itWasFailed()) {
+            LOG.trace("API RESULT: text2text FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
+        } else {
+            LOG.trace("API RESULT: text2text OK");
+        }
         return response;
     }
 
     public GateLoginResponse tryLogin(GateLoginRequest request) {
+        LOG.trace("API CALL: Ac4yGateServiceClient.login() -> https://gate.ac4y.com");
         GateLoginResponse response =
                 new Ac4yGateServiceClient("https://gate.ac4y.com").login(request);
-        if (response.itWasFailed())
+        if (response.itWasFailed()) {
+            LOG.trace("API RESULT: login FAILED");
             screenMessageHandler.errorNotifying(response.getResult().getDescription());
+        } else {
+            LOG.trace("API RESULT: login OK");
+        }
         return response;
     }
 
@@ -443,7 +476,7 @@ public class MainController {
 
     public void trace(String message) {
         LOG.info(message);
-        frame.getLogPanel().addLog(message);
+        view.addLog(message);
     }
 
 }

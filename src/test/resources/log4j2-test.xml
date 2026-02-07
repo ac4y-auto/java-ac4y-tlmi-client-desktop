@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+
+    <Properties>
+        <Property name="basePath">./logs</Property>
+    </Properties>
+
+    <Appenders>
+        <File name="TEST_FILE" fileName="${basePath}/tlmi-client-test.log" append="false">
+            <PatternLayout pattern="%-5p | %d{yyyy-MM-dd HH:mm:ss.SSS} | [%t] %C{2} (%F:%L) - %m%n" />
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%-5p | %d{HH:mm:ss.SSS} | %C{1} - %m%n" />
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="tlmi.communcator" level="trace" />
+        <Root level="trace">
+            <AppenderRef ref="STDOUT" />
+            <AppenderRef ref="TEST_FILE" />
+        </Root>
+    </Loggers>
+
+</Configuration>
