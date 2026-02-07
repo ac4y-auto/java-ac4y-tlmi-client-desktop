@@ -1,0 +1,31 @@
+<menu
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/showEnvironmentVariables"
+        android:title="show environment variables"
+        android:icon="@drawable/play"
+        />
+
+    <item android:id="@+id/stopMenuItem"
+        android:title="@string/stop"
+        android:icon="@drawable/stop"
+        />
+
+    <item android:id="@+id/partnersMenuItem"
+        android:title="@string/partners"
+        android:icon="@drawable/children"
+        />
+
+    <item android:id="@+id/chatHistoryMenuItem"
+        android:title="@string/chat"
+        android:icon="@drawable/user_menu_male"
+        />
+
+    <item android:id="@+id/logMenuItem"
+        android:title="@string/log"
+        android:icon="@drawable/terms_and_conditions"
+        />
+
+</menu>

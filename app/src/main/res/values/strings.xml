@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">tlmi v1.20190312.1</string>
+
+    <string name="partners">partners</string>
+    <string name="chat">chat</string>
+    <string name="log">log</string>
+    <string name="start">start</string>
+    <string name="stop">stop</string>
+
+</resources>

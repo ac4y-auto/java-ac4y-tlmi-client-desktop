@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="icon_font_recognition">&#xf110;</string>
+    <string name="icon_font_speech">&#xf117;</string>
+    <string name="icon_font_internet">&#xf11c;</string>
+    <string name="icon_font_websocket">&#xf104;</string>
+    <string name="icon_font_login">&#xf161;</string>
+
+</resources>
+

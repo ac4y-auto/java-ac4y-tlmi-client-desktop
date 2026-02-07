@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+
+    <color name="indicator_color_default">#D8D3D5</color>
+    <color name="indicator_color_error">#CC4977</color>
+    <color name="indicator_color_live">#2E2D2D</color>
+    <color name="indicator_color_works">#8BC34A</color>
+    <color name="indicator_color_after_works">#07660B</color>
+    <color name="indicator_color_after_speech">#F7C329</color>
+    <color name="indicator_color_end_speech">#FF9800</color>
+    <color name="indicator_color_process">#2196F3</color>
+
+</resources>
