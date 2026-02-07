@@ -2,10 +2,15 @@
 
 **Projekt**: ac4y-tlmi-client-desktop v1.0.20260207.1
 **Dokumentáció dátuma**: 2026-02-07
+**Utolsó frissítés**: 2026-02-07 (ServerConfig, localhost támogatás)
 
 ---
 
 ## Szerver Környezet
+
+Az alkalmazás a `ServerConfig` osztályon keresztül kezeli a szerver URL-eket. Két profil érhető el:
+
+### Production profil (`ServerConfig.production()`)
 
 | Szerver | URL | Protokoll | Kliens Osztály |
 |---------|-----|-----------|----------------|
@@ -14,37 +19,61 @@
 | Translation API | `https://api.ac4y.com` | HTTPS REST | `TlmiServiceClient` |
 | WebSocket | `wss://www.ac4y.com:2222/{userId}` | WSS | `WebSocketClient` |
 
+### Local profil (`ServerConfig.local()`) — `--local` flag
+
+| Szerver | URL | Protokoll | Megjegyzés |
+|---------|-----|-----------|------------|
+| Gate Service | `http://localhost:3000` | HTTP REST | ac4y-gate Node.js |
+| User Service | `http://localhost:3000` | HTTP REST | Csak `/gate/*` végpontok |
+| Translation API | `http://localhost:3000` | HTTP REST | Nem elérhető |
+| WebSocket | `ws://localhost:2222/{userId}` | WS | ac4y-gate WS szerver |
+
+**Megjegyzés**: A local profilban a User Service (`/user/*`) és Translation API (`/api/*`) végpontok nem érhetők el, mert az ac4y-gate szerver csak `/gate/*` útvonalakat implementál. Az alkalmazás graceful degradation-nel kezeli ezt: a partner lista és saját profil betöltés nem blokkol, ha a user service nem elérhető.
+
+### ServerConfig használata
+
+```java
+// Indítás: --local flag → ServerConfig.local()
+// Alapértelmezett: ServerConfig.production()
+ServerConfig config = useLocal ? ServerConfig.local() : ServerConfig.production();
+MainController controller = new MainController(view, cliMode, config);
+```
+
 ---
 
 ## 1. Internet Ellenőrzés
 
-**Hol**: `MainController.checkInternet()` (sor: 134-146)
+**Hol**: `MainController.checkInternet()`
 **Mikor**: Az `initialize()` legelső lépése
 
 ```
-HEAD https://client.ac4y.com
+GET {serverConfig.getHealthCheckUrl()}
+    Production: GET https://gate.ac4y.com/gate/user
+    Local:      GET http://localhost:3000/gate/user
 Timeout: 3000ms
 ```
 
-**Cél**: Egyszerű elérhetőségi próba — ha a client.ac4y.com nem érhető el, az app hibát jelez és a StatusBar `internetError()` állapotba kerül. A többi lépés is lefut, de sikertelen lesz.
+**Cél**: Egyszerű elérhetőségi próba — ha a szerver nem érhető el, az app hibát jelez és a StatusBar `internetError()` állapotba kerül. A többi lépés is lefut, de sikertelen lesz.
 
 **Eredmény**:
-- Sikeres: StatusBar `internetLive()`
-- Sikertelen: StatusBar `internetError()` + JOptionPane hibaüzenet
+- Sikeres (HTTP 2xx/3xx): `view.setInternetStatus(true)`
+- Sikertelen: `view.setInternetStatus(false)` + hibaüzenet
 
 ---
 
 ## 2. Felhasználó Lekérdezés Név Alapján
 
-**Hol**: `MainController.tryGetTranslateUserByName()` (sor: 402-408)
-**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")`
+**Hol**: `MainController.tryGetTranslateUserByName()`
+**Kliens**: `TlmiUserServiceClient(serverConfig.getUserServiceUrl())`
 **Metódus**: `getTranslateUserByName(GetTranslateUserByNameRequest)`
 
 **Mikor hívódik** (4 helyen):
-1. `initialize()` sor 86-87 — Saját felhasználó létezésének ellenőrzése induláskor
-2. `loadSelfInfo()` sor 182-183 — Saját profil (humanName, avatar) betöltése
-3. `handleInvitation()` sor 341-342 — Meghívó partner adatainak (avatar) betöltése
-4. `handleInvitationAccept()` sor 364-365 — Meghívást elfogadó partner adatainak betöltése
+1. `initialize()` step 3 — Saját felhasználó létezésének ellenőrzése induláskor
+2. `loadSelfInfo()` step 7 — Saját profil (humanName, avatar) betöltése
+3. `handleInvitation()` — Meghívó partner adatainak (avatar) betöltése
+4. `handleInvitationAccept()` — Meghívást elfogadó partner adatainak betöltése
+
+**Graceful degradation**: Ha a user service nem elérhető (pl. local profilban), a hívás kivételt dob, amit a `loadSelfInfo()` és `loadPartners()` elfog és logol.
 
 **Request**:
 ```java
@@ -72,8 +101,8 @@ GetTranslateUserByNameResponse {
 
 ## 3. Felhasználó Létrehozás (User Service)
 
-**Hol**: `MainController.tryInsertUser()` (sor: 410-416)
-**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")`
+**Hol**: `MainController.tryInsertUser()`
+**Kliens**: `TlmiUserServiceClient(serverConfig.getUserServiceUrl())`
 **Metódus**: `insertUser(InsertUserRequest)`
 
 **Mikor hívódik**:
@@ -102,8 +131,8 @@ InsertUserResponse {
 
 ## 4. Felhasználó Regisztráció (Gate Service)
 
-**Hol**: `MainController.tryGateInsertUser()` (sor: 418-424)
-**Kliens**: `Ac4yGateServiceClient("https://gate.ac4y.com")`
+**Hol**: `MainController.tryGateInsertUser()`
+**Kliens**: `Ac4yGateServiceClient(serverConfig.getGateServiceUrl())`
 **Metódus**: `insertUser(GateInsertUserRequest)`
 
 **Mikor hívódik** (2 helyen):
@@ -131,8 +160,8 @@ GateInsertUserResponse {
 
 ## 5. Bejelentkezés (Gate Service)
 
-**Hol**: `MainController.tryLogin()` (sor: 434-440)
-**Kliens**: `Ac4yGateServiceClient("https://gate.ac4y.com")`
+**Hol**: `MainController.tryLogin()`
+**Kliens**: `Ac4yGateServiceClient(serverConfig.getGateServiceUrl())`
 **Metódus**: `login(GateLoginRequest)`
 
 **Mikon hívódik**:
@@ -163,12 +192,14 @@ GateLoginResponse {
 
 ## 6. WebSocket Csatlakozás
 
-**Hol**: `MainController.connectWebSocket()` (sor: 201-237)
-**Protokoll**: WSS (WebSocket Secure)
-**URL**: `wss://www.ac4y.com:2222/{userId}`
+**Hol**: `MainController.connectWebSocket()`
+**Protokoll**: WSS (production) / WS (local)
+**URL**: `serverConfig.getWebsocketUri(userId)`
+- Production: `wss://www.ac4y.com:2222/{userId}`
+- Local: `ws://localhost:2222/{userId}`
 
 **Mikor hívódik**:
-- `initialize()` sor 113 — Sikeres login után
+- `initialize()` step 5 — Sikeres login után
 
 **Események**:
 ```java
@@ -212,8 +243,10 @@ Bejövő JSON diszpécselése `commandName` alapján:
 
 ## 7. Partner Lista Betöltése
 
-**Hol**: `MainController.loadPartners()` (sor: 148-178)
-**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")`
+**Hol**: `MainController.loadPartners()`
+**Kliens**: `TlmiUserServiceClient(serverConfig.getUserServiceUrl())`
+
+**Graceful degradation**: Ha a user service nem elérhető (pl. local profil), a partner lista üres marad, de az alkalmazás folytatja a működést (gate + websocket normálisan üzemel).
 **Metódus**: `getAllTranslateUsers()`
 
 **Mikor hívódik**:
@@ -234,8 +267,8 @@ GetAllTranslateUsersResponse {
 
 ## 8. Szöveg Fordítás (Text2Text)
 
-**Hol**: `MainController.tryText2Text()` (sor: 426-432)
-**Kliens**: `TlmiServiceClient("https://api.ac4y.com")`
+**Hol**: `MainController.tryText2Text()`
+**Kliens**: `TlmiServiceClient(serverConfig.getTranslationServiceUrl())`
 **Metódus**: `text2text(Text2TextRequest)`
 
 **Mikor hívódik**:
@@ -265,45 +298,48 @@ Text2TextResponse {
 ## API Hívások Szekvencia Diagramja
 
 ```
-App indítás
+App indítás                                    Production URL          Local URL
 │
-├─ 1. HEAD https://client.ac4y.com                    [Internet ellenőrzés]
+├─ 1. GET {healthCheckUrl}                     gate.ac4y.com/gate/user localhost:3000/gate/user
+│      [Internet/szerver ellenőrzés]
 │
-├─ 2. GET  https://client.ac4y.com                    [Felhasználó létezik?]
-│      └─ getTranslateUserByName(userId)
+├─ 2. GET {userServiceUrl}                     client.ac4y.com        localhost:3000 (*)
+│      └─ getTranslateUserByName(userId)       [Felhasználó létezik?]
 │
-├─ 3. POST https://client.ac4y.com                    [Ha nem létezik: user insert]
-│      └─ insertUser(TlmiTranslateUser)
+├─ 3. POST {userServiceUrl}                    client.ac4y.com        localhost:3000 (*)
+│      └─ insertUser(TlmiTranslateUser)        [Ha nem létezik: user insert]
 │
-├─ 4. POST https://gate.ac4y.com                      [Gate regisztráció]
-│      └─ insertUser(name, password)                   (ha nem létezik + mindig)
+├─ 4. POST {gateServiceUrl}                    gate.ac4y.com          localhost:3000
+│      └─ insertUser(name, password)           [Gate regisztráció] (ha nem létezik + mindig)
 │
-├─ 5. POST https://gate.ac4y.com                      [Login]
-│      └─ login(name, password)
+├─ 5. POST {gateServiceUrl}                    gate.ac4y.com          localhost:3000
+│      └─ login(name, password)                [Login]
 │      └─ HA SIKERTELEN → STOP
 │
-├─ 6. WSS  wss://www.ac4y.com:2222/{userId}           [WebSocket csatlakozás]
+├─ 6. WS {websocketUri}/{userId}               wss://ac4y.com:2222    ws://localhost:2222
+│      [WebSocket csatlakozás]
 │
-├─ 7. GET  https://client.ac4y.com                    [Partner lista betöltés]
-│      └─ getAllTranslateUsers()
+├─ 7. GET {userServiceUrl}                     client.ac4y.com        localhost:3000 (*)
+│      └─ getAllTranslateUsers()               [Partner lista betöltés]
 │
-└─ 8. GET  https://client.ac4y.com                    [Saját profil betöltés]
-       └─ getTranslateUserByName(userId)
+└─ 8. GET {userServiceUrl}                     client.ac4y.com        localhost:3000 (*)
+       └─ getTranslateUserByName(userId)       [Saját profil betöltés]
 
+(*) = Graceful degradation: ha a user service nem elérhető, nem blokkol
 
 Chat közben
 │
 ├─ Üzenet küldés (ha eltérő nyelv):
-│   └─ POST https://api.ac4y.com                      [Fordítás]
+│   └─ POST {translationServiceUrl}            api.ac4y.com           localhost:3000 (*)
 │          └─ text2text(text, targetLang, sourceLang)
-│   └─ WSS  send(TlmiMessage)                         [Küldés partnernerk]
+│   └─ WS send(TlmiMessage)                   [Küldés partnernek]
 │
 ├─ Meghívás fogadásakor:
-│   └─ GET  https://client.ac4y.com                   [Partner avatar betöltés]
+│   └─ GET {userServiceUrl}                    client.ac4y.com        localhost:3000 (*)
 │          └─ getTranslateUserByName(partnerName)
 │
 └─ Meghívás elfogadásakor:
-    └─ GET  https://client.ac4y.com                   [Partner avatar betöltés]
+    └─ GET {userServiceUrl}                    client.ac4y.com        localhost:3000 (*)
            └─ getTranslateUserByName(partnerName)
 ```
 
@@ -331,6 +367,27 @@ public XxxResponse tryXxx(XxxRequest request) {
 ## Megjegyzések
 
 1. **Statikus jelszó**: Minden felhasználó jelszava `"1"` — ez nem valódi autentikáció, hanem a Gate Service elvárásához igazodó placeholder
-2. **Dupla gate insert**: A `tryGateInsertUser()` kétszer hívódik (sor 95 + 98) — egyszer az új felhasználó folyamaton belül, és egyszer feltétel nélkül
-3. **Hardcoded URL-ek**: Minden szerver URL a kódban van megadva, nincs konfigurációs fájl
+2. **Dupla gate insert**: A `tryGateInsertUser()` kétszer hívódik — egyszer az új felhasználó folyamaton belül, és egyszer feltétel nélkül
+3. **ServerConfig**: A szerver URL-ek a `ServerConfig` osztályban vannak definiálva, két profillal: `production()` és `local()`. A `--local` CLI flag aktiválja a localhost profilt
 4. **Szinkron hívások**: Minden REST hívás szinkron (blokkoló) — háttérszálról fut (`new Thread()` a `Main.java`-ban)
+5. **Graceful degradation**: A `loadPartners()` és `loadSelfInfo()` metódusok try-catch-ben futnak — ha a user service nem elérhető (pl. local profilban), az alkalmazás folytatja a működést a gate + websocket funkciókkal
+6. **CLI mód**: `--cli` flag-gel GUI nélkül indul (CliMainView), `--local` flag-gel a localhost szerverhez csatlakozik
+
+## Indítási módok
+
+```bash
+# GUI + production szerver
+mvn exec:java
+
+# GUI + localhost szerver
+mvn exec:java -Dexec.args="--local"
+
+# CLI + production szerver
+mvn exec:java -Dexec.args="--cli"
+
+# CLI + localhost szerver
+mvn exec:java -Dexec.args="--cli --local"
+
+# Teszt (TRACE loglevel, auto-detected log4j2-test.xml)
+mvn test
+```
