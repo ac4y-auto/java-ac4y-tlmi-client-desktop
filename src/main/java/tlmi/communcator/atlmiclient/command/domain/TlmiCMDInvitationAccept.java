@@ -1,9 +1,12 @@
 package tlmi.communcator.atlmiclient.command.domain;
 
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import tlmi.communcator.atlmiclient.command.algebra.TlmiCMDInvitationAcceptAlgebra;
 
 public class TlmiCMDInvitationAccept extends TlmiCMDInvitationAcceptAlgebra {
+
+    private static final Logger LOG = LogManager.getLogger(TlmiCMDInvitationAccept.class);
 
     public TlmiCMDInvitationAccept(){
 
@@ -24,7 +27,7 @@ public class TlmiCMDInvitationAccept extends TlmiCMDInvitationAcceptAlgebra {
     }
 
     public void process(){
-        System.out.println("invitation accept arrived:");
+        LOG.info("invitation accept arrived");
     }
 
 }

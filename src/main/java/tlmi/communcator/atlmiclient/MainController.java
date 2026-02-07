@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -30,6 +32,7 @@ import tlmi.communcator.atlmiclient.command.domain.TlmiMessage;
 import tlmi.communcator.atlmiclient.model.ChatEvent;
 import tlmi.communcator.atlmiclient.ui.ImageUtil;
 import tlmi.communcator.atlmiclient.ui.MainFrame;
+import tlmi.communcator.atlmiclient.ui.PartnerListPanel;
 import tlmi.communcator.atlmiclient.utility.ScreenMessageHandler;
 import tlmi.service.client.TlmiServiceClient;
 import tlmi.service.domain.Text2TextRequest;
@@ -43,6 +46,8 @@ import tlmi.user.service.domain.InsertUserRequest;
 import tlmi.user.service.domain.InsertUserResponse;
 
 public class MainController {
+
+    private static final Logger LOG = LogManager.getLogger(MainController.class);
 
     private final MainFrame frame;
     private final AppEnvironmentVariableHandler env;
@@ -146,14 +151,16 @@ public class MainController {
 
         for (TlmiTranslateUser partner : allUsersResponse.list) {
             if (!partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
-                frame.getPartnerListPanel().addPartner(partner);
+                frame.getPartnerListPanel().addPartner(
+                        new PartnerListPanel.PartnerInfo(partner.getName(), partner.getHumanName(), partner.getAvatar())
+                );
             }
         }
 
         // Partner click handler
         frame.getPartnerListPanel().getList().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                TlmiTranslateUser user = frame.getPartnerListPanel().getList().getSelectedValue();
+                PartnerListPanel.PartnerInfo user = frame.getPartnerListPanel().getList().getSelectedValue();
                 if (user != null) {
                     env.getPartnerId().set(user.getName());
                     env.getPartnerAvatar().set(user.getAvatar());
@@ -304,7 +311,7 @@ public class MainController {
                                 trace("nothing to do:" + commandName);
                             }
                         } else {
-                            System.out.println("no legal command!");
+                            LOG.warn("no legal command in message body");
                         }
                     }
                 }
@@ -435,7 +442,7 @@ public class MainController {
     // --- Logging ---
 
     public void trace(String message) {
-        System.out.println(message);
+        LOG.info(message);
         frame.getLogPanel().addLog(message);
     }
 
