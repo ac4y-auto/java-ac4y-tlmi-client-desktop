@@ -1,0 +1,337 @@
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:28) - === Tolmi Desktop Client — CLI Mode ===
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:29) - server config: ServerConfig{gate=http://localhost:3000, user=http://localhost:3002, translation=http://localhost:3000, ws=ws://localhost:2222}
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:66) - ServerConfig: ServerConfig{gate=http://localhost:3000, user=http://localhost:3002, translation=http://localhost:3000, ws=ws://localhost:2222}
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:34) - starting initialization...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:70) - >>> initialize() START
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:73) - step 1: checking server connection...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:155) - checkInternet: GET http://localhost:3000/gate/user
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:164) - checkInternet: OK (HTTP 200)
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:28) - [STATUS] internet: LIVE
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - server is reachable
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] server is reachable
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:84) - step 2: setting up user identity...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:86) - userId generated: 38284797-a867-410c-b912-f0a9c3da7d7c
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - locale.getCountry:HU
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] locale.getCountry:HU
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - locale.getLanguage:hu
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] locale.getLanguage:hu
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:97) - step 3: checking if user exists on user service...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:441) - API CALL: TlmiUserServiceClient.getTranslateUserByName(38284797-a867-410c-b912-f0a9c3da7d7c) -> http://localhost:3002
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:445) - API RESULT: getTranslateUserByName FAILED
+ERROR | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] user does not exist by name!
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:102) - step 3a: user not found on user service (or service unavailable), creating on gate...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:454) - API CALL: TlmiUserServiceClient.insertUser() -> http://localhost:3002
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:458) - API RESULT: insertUser FAILED
+ERROR | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] this.getAc4yIdentification(...).getTemplate is not a function
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:467) - API CALL: Ac4yGateServiceClient.insertUser() -> http://localhost:3000
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:474) - API RESULT: gateInsertUser OK
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:113) - step 3b: ensuring gate registration...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:467) - API CALL: Ac4yGateServiceClient.insertUser() -> http://localhost:3000
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:474) - API RESULT: gateInsertUser OK
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:117) - step 4: logging in via gate...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:493) - API CALL: Ac4yGateServiceClient.login() -> http://localhost:3000
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:500) - API RESULT: login OK
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:33) - [STATUS] login: LIVE
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - login successed!
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] login successed!
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:131) - step 5: connecting websocket...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:253) - connectWebSocket: URI=ws://localhost:2222/38284797-a867-410c-b912-f0a9c3da7d7c
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:135) - step 6: loading partners...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:173) - loadPartners: fetching all users from http://localhost:3002
+TRACE | 2026-02-08 13:34:06 | [WebSocketConnectReadThread-50] view.CliMainView (CliMainView.java:38) - [STATUS] websocket: LIVE
+INFO  | 2026-02-08 13:34:06 | [WebSocketConnectReadThread-50] atlmiclient.MainController (MainController.java:508) - WS open
+TRACE | 2026-02-08 13:34:06 | [WebSocketConnectReadThread-50] view.CliMainView (CliMainView.java:105) - [LOG] WS open
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:194) - loadPartners: FAILED (java.lang.NumberFormatException: For input string: "69888284b166a164f61e3422")
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - partner list not available: java.lang.NumberFormatException: For input string: "69888284b166a164f61e3422"
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] partner list not available: java.lang.NumberFormatException: For input string: "69888284b166a164f61e3422"
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:52) - [VIEW] partner selection listener registered
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:139) - step 7: loading self info...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:221) - loadSelfInfo: fetching own profile from http://localhost:3002
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:441) - API CALL: TlmiUserServiceClient.getTranslateUserByName(38284797-a867-410c-b912-f0a9c3da7d7c) -> http://localhost:3002
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:445) - API RESULT: getTranslateUserByName FAILED
+ERROR | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] this.getAc4yIdentification(...).getTemplate is not a function
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:237) - loadSelfInfo: failed to load profile (user service may not be available)
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:73) - [USER] self name: 38284797-a867-410c-b912-f0a9c3da7d7c (hu)
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:143) - step 8: setting up chat send action...
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:60) - [VIEW] send action registered
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - start!
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] start!
+TRACE | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:150) - >>> initialize() COMPLETE
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:37) - initialization complete. partners loaded: 0
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:38) - log entries: 7
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:41) - --- Partner list ---
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:46) - --- Log entries ---
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   server is reachable
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   locale.getCountry:HU
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   locale.getLanguage:hu
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   login successed!
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   WS open
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   partner list not available: java.lang.NumberFormatException: For input string: "69888284b166a164f61e3422"
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   start!
+INFO  | 2026-02-08 13:34:06 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:51) - === CLI Mode finished ===
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:28) - === Tolmi Desktop Client — CLI Mode ===
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:29) - server config: ServerConfig{gate=http://localhost:3000, user=http://localhost:3002, translation=http://localhost:3000, ws=ws://localhost:2222}
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:66) - ServerConfig: ServerConfig{gate=http://localhost:3000, user=http://localhost:3002, translation=http://localhost:3000, ws=ws://localhost:2222}
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:34) - starting initialization...
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:70) - >>> initialize() START
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:73) - step 1: checking server connection...
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:155) - checkInternet: GET http://localhost:3000/gate/user
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:164) - checkInternet: OK (HTTP 200)
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:28) - [STATUS] internet: LIVE
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - server is reachable
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] server is reachable
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:84) - step 2: setting up user identity...
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:86) - userId generated: 30021d24-4910-4520-b2d8-7f88e0d13fee
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - locale.getCountry:HU
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] locale.getCountry:HU
+INFO  | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - locale.getLanguage:hu
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] locale.getLanguage:hu
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:97) - step 3: checking if user exists on user service...
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:441) - API CALL: TlmiUserServiceClient.getTranslateUserByName(30021d24-4910-4520-b2d8-7f88e0d13fee) -> http://localhost:3002
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:445) - API RESULT: getTranslateUserByName FAILED
+ERROR | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] user does not exist by name!
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:102) - step 3a: user not found on user service (or service unavailable), creating on gate...
+TRACE | 2026-02-08 15:40:19 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:454) - API CALL: TlmiUserServiceClient.insertUser() -> http://localhost:3002
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:458) - API RESULT: insertUser FAILED
+ERROR | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] insert into `TranslateUser` (`GUID`, `ac4yIdentification`, `id`, `name`, `password`) values ('b4bac218-d25a-4c97-ad83-4429b313eb43', {"template":{"GUID":"b0909564-18d9-4148-8dd4-62a7d5bfdc47","deleted":false,"persistentID":-2},"GUID":"b4bac218-d25a-4c97-ad83-4429b313eb43","deleted":false,"persistentID":-2}, 0, '30021d24-4910-4520-b2d8-7f88e0d13fee', '1') - Unknown column 'ac4yIdentification' in 'field list'
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:467) - API CALL: Ac4yGateServiceClient.insertUser() -> http://localhost:3000
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:474) - API RESULT: gateInsertUser OK
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:113) - step 3b: ensuring gate registration...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:467) - API CALL: Ac4yGateServiceClient.insertUser() -> http://localhost:3000
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:474) - API RESULT: gateInsertUser OK
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:117) - step 4: logging in via gate...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:493) - API CALL: Ac4yGateServiceClient.login() -> http://localhost:3000
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:500) - API RESULT: login OK
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:33) - [STATUS] login: LIVE
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - login successed!
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] login successed!
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:131) - step 5: connecting websocket...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:253) - connectWebSocket: URI=ws://localhost:2222/30021d24-4910-4520-b2d8-7f88e0d13fee
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:135) - step 6: loading partners...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:173) - loadPartners: fetching all users from http://localhost:3002
+TRACE | 2026-02-08 15:40:20 | [WebSocketConnectReadThread-50] view.CliMainView (CliMainView.java:38) - [STATUS] websocket: LIVE
+INFO  | 2026-02-08 15:40:20 | [WebSocketConnectReadThread-50] atlmiclient.MainController (MainController.java:508) - WS open
+TRACE | 2026-02-08 15:40:20 | [WebSocketConnectReadThread-50] view.CliMainView (CliMainView.java:105) - [LOG] WS open
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #0 (user_0000)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: UPDATED User #1 (user_0001)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #2 (user_0002)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #3 (user_0003)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #4 (user_0004)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #5 (user_0005)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #6 (user_0006)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #7 (user_0007)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #8 (user_0008)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #9 (user_0009)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #10 (user_0010)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #11 (user_0011)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #12 (user_0012)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #13 (user_0013)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #14 (user_0014)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #15 (user_0015)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #16 (user_0016)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #17 (user_0017)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #18 (user_0018)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #19 (user_0019)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #20 (user_0020)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #21 (user_0021)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #22 (user_0022)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #23 (user_0023)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #24 (user_0024)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #25 (user_0025)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #26 (user_0026)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #27 (user_0027)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #28 (user_0028)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #29 (user_0029)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #30 (user_0030)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #31 (user_0031)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #32 (user_0032)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #33 (user_0033)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #34 (user_0034)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #35 (user_0035)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #36 (user_0036)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #37 (user_0037)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #38 (user_0038)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #39 (user_0039)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #40 (user_0040)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #41 (user_0041)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #42 (user_0042)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #43 (user_0043)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #44 (user_0044)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #45 (user_0045)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #46 (user_0046)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #47 (user_0047)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #48 (user_0048)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #49 (user_0049)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #50 (user_0050)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #51 (user_0051)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #52 (user_0052)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #53 (user_0053)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #54 (user_0054)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #55 (user_0055)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #56 (user_0056)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #57 (user_0057)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #58 (user_0058)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #59 (user_0059)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #60 (user_0060)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #61 (user_0061)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #62 (user_0062)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #63 (user_0063)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #64 (user_0064)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #65 (user_0065)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #66 (user_0066)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #67 (user_0067)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #68 (user_0068)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #69 (user_0069)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #70 (user_0070)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #71 (user_0071)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #72 (user_0072)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #73 (user_0073)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #74 (user_0074)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #75 (user_0075)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #76 (user_0076)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #77 (user_0077)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #78 (user_0078)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #79 (user_0079)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #80 (user_0080)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #81 (user_0081)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #82 (user_0082)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #83 (user_0083)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #84 (user_0084)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #85 (user_0085)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #86 (user_0086)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #87 (user_0087)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #88 (user_0088)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #89 (user_0089)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #90 (user_0090)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #91 (user_0091)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #92 (user_0092)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #93 (user_0093)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #94 (user_0094)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #95 (user_0095)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #96 (user_0096)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #97 (user_0097)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:46) - [PARTNER] added: Test User #98 (user_0098)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:192) - loadPartners: 99 partners added
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:52) - [VIEW] partner selection listener registered
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:139) - step 7: loading self info...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:221) - loadSelfInfo: fetching own profile from http://localhost:3002
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:441) - API CALL: TlmiUserServiceClient.getTranslateUserByName(30021d24-4910-4520-b2d8-7f88e0d13fee) -> http://localhost:3002
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:445) - API RESULT: getTranslateUserByName FAILED
+ERROR | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] utility.ScreenMessageHandler (ScreenMessageHandler.java:35) - [ERROR] user does not exist by name!
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:237) - loadSelfInfo: failed to load profile (user service may not be available)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:73) - [USER] self name: 30021d24-4910-4520-b2d8-7f88e0d13fee (hu)
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:143) - step 8: setting up chat send action...
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:60) - [VIEW] send action registered
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:508) - start!
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] view.CliMainView (CliMainView.java:105) - [LOG] start!
+TRACE | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.MainController (MainController.java:150) - >>> initialize() COMPLETE
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:37) - initialization complete. partners loaded: 99
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:38) - log entries: 6
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:41) - --- Partner list ---
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #0 (user_0000)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   UPDATED User #1 (user_0001)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #2 (user_0002)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #3 (user_0003)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #4 (user_0004)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #5 (user_0005)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #6 (user_0006)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #7 (user_0007)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #8 (user_0008)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #9 (user_0009)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #10 (user_0010)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #11 (user_0011)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #12 (user_0012)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #13 (user_0013)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #14 (user_0014)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #15 (user_0015)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #16 (user_0016)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #17 (user_0017)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #18 (user_0018)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #19 (user_0019)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #20 (user_0020)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #21 (user_0021)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #22 (user_0022)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #23 (user_0023)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #24 (user_0024)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #25 (user_0025)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #26 (user_0026)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #27 (user_0027)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #28 (user_0028)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #29 (user_0029)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #30 (user_0030)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #31 (user_0031)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #32 (user_0032)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #33 (user_0033)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #34 (user_0034)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #35 (user_0035)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #36 (user_0036)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #37 (user_0037)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #38 (user_0038)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #39 (user_0039)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #40 (user_0040)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #41 (user_0041)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #42 (user_0042)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #43 (user_0043)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #44 (user_0044)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #45 (user_0045)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #46 (user_0046)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #47 (user_0047)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #48 (user_0048)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #49 (user_0049)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #50 (user_0050)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #51 (user_0051)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #52 (user_0052)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #53 (user_0053)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #54 (user_0054)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #55 (user_0055)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #56 (user_0056)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #57 (user_0057)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #58 (user_0058)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #59 (user_0059)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #60 (user_0060)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #61 (user_0061)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #62 (user_0062)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #63 (user_0063)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #64 (user_0064)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #65 (user_0065)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #66 (user_0066)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #67 (user_0067)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #68 (user_0068)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #69 (user_0069)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #70 (user_0070)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #71 (user_0071)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #72 (user_0072)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #73 (user_0073)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #74 (user_0074)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #75 (user_0075)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #76 (user_0076)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #77 (user_0077)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #78 (user_0078)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #79 (user_0079)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #80 (user_0080)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #81 (user_0081)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #82 (user_0082)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #83 (user_0083)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #84 (user_0084)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #85 (user_0085)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #86 (user_0086)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #87 (user_0087)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #88 (user_0088)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #89 (user_0089)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #90 (user_0090)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #91 (user_0091)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #92 (user_0092)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #93 (user_0093)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #94 (user_0094)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #95 (user_0095)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #96 (user_0096)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #97 (user_0097)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:43) -   Test User #98 (user_0098)
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:46) - --- Log entries ---
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   server is reachable
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   locale.getCountry:HU
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   locale.getLanguage:hu
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   login successed!
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   WS open
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:48) -   start!
+INFO  | 2026-02-08 15:40:20 | [tlmi.communcator.atlmiclient.Main.main()] atlmiclient.CliMain (CliMain.java:51) - === CLI Mode finished ===

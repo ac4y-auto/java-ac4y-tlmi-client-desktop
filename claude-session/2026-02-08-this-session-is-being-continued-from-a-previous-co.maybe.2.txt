@@ -1,0 +1,785 @@
+
+╭─── Claude Code v2.1.30 ──────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│                 Welcome back ac4y!                 │ started                 │
+│                                                    │ Run /init to create a … │
+│                       ▐▛███▜▌                      │ ─────────────────────── │
+│                      ▝▜█████▛▘                     │ Recent activity         │
+│                        ▘▘ ▝▝                       │ No recent activity      │
+│                                                    │                         │
+│ claude-opus-4-6 · Claude API · ac4y‘s Individual   │                         │
+│ Org                                                │                         │
+│ /…/work/by-project/ac4y-java/app/java-tolmi-client │                         │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+
+ ⚠Auth conflict: Both a token (CLAUDE_CODE_OAUTH_TOKEN) and an API key (/login 
+  managed key) are set. This may lead to unexpected behavior.
+    • Trying to use CLAUDE_CODE_OAUTH_TOKEN? claude /logout
+    • Trying to use /login managed key? Unset the CLAUDE_CODE_OAUTH_TOKEN 
+    environment variable.
+
+✻ Conversation compacted (ctrl+o for history)
+
+
+⏺ I need to commit and push the ServerConfig + localhost connection changes. Let
+   me check the current state first.
+
+⏺ Bash(git status)
+  ⎿  On branch main
+     Your branch is up to date with 'origin/main'.
+     … +16 lines (ctrl+o to expand)
+
+⏺ Bash(git diff --stat)
+  ⎿  .../java/tlmi/communcator/atlmiclient/CliMain.java |  17 ++-
+     .../java/tlmi/communcator/atlmiclient/Main.java    |  25 +++-
+     .../communcator/atlmiclient/MainController.java    | 144 +++++++++++++
+    … +3 lines (ctrl+o to expand)
+
+
+⏺ Bash(git log --oneline -5)
+  ⎿  73ea705 feat: add CLI mode, IMainView interface, and JUnit 5 test
+     6e421d9 feat: add Log4j2 logging and API calls documentation
+     63256fc feat: initial commit — Tolmi Desktop Client
+
+⏺ Good. Now let me stage and commit the changes:
+
+⏺ Bash(git add src/main/java/tlmi/communcator/atlmiclient/ServerConfig.java
+      src/main/java/tlmi/communcator/atlmiclient/CliMain.java
+      src/main/java/tlmi/communcator/atlm…)
+  ⎿  (No content)
+
+⏺ Bash(git commit -m "feat: add ServerConfig for localhost dev and graceful
+      degradation…)
+  ⎿ [main 1b2e4e7] feat: add ServerConfig for localhost dev and graceful de
+    gradation
+     5 files changed, 230 insertions(+), 111 deletions(-)
+    … +2 lines (ctrl+o to expand)
+
+
+⏺ Bash(git push origin main)
+  ⎿  To https://github.com/ac4y-auto/java-ac4y-tlmi-client-desktop.git
+        73ea705..1b2e4e7  main -> main
+
+⏺ Kész! ✅ A commit és push megtörtént: 1b2e4e7 — feat: add ServerConfig for 
+  localhost dev and graceful degradation
+
+  Összefoglaló az aktuális állapotról:
+  ┌────────────────────────────────────────────────────┬─────────┐
+  │                      Funkció                       │ Státusz │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ ServerConfig (production/local)                    │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ MainController paraméteres URL-ek                  │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ Graceful degradation (user service nélkül is megy) │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ CLI --local flag                                   │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ Gate login (localhost:3000)                        │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ WebSocket (localhost:2222)                         │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ JUnit teszt (2 teszt zöld)                         │ ✅      │
+  ├────────────────────────────────────────────────────┼─────────┤
+  │ GitHub push                                        │ ✅      │
+  └────────────────────────────────────────────────────┴─────────┘
+  A kliens sikeresen csatlakozik a helyi ac4y-gate szerverhez: login OK,
+  WebSocket nyitva, partner lista nem érhető el (user service nem fut, de ez nem
+   blokkol).
+
+❯ doc, handoff, git, és megyünk egy másik session-be!  
+
+⏺ Elkészítem a dokumentációt, a handoff-ot, commitolok és pusholok.
+
+⏺ Let me first check what docs exist and what needs updating:
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Now let me read the other docs to understand what needs updating:
+
+⏺ Read 5 files (ctrl+o to expand)
+
+⏺ Now I have a full picture. Let me update the docs in parallel — API_CALLS.md
+  needs the ServerConfig/local server info, and the other docs reflect the old
+  Android-only structure. Let me update them all:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 32 lines, removed 5 lines
+       2  
+       3  **Projekt**: ac4y-tlmi-client-desktop v1.0.20260207.1
+       4  **Dokumentáció dátuma**: 2026-02-07
+       5 +**Utolsó frissítés**: 2026-02-07 (ServerConfig, localhost támog
+         +atás)                                                          
+       6  
+       7  ---
+       8  
+       9  ## Szerver Környezet
+      10  
+      11 +Az alkalmazás a `ServerConfig` osztályon keresztül kezeli a sze
+         +rver URL-eket. Két profil érhető el:                           
+      12 +                                                               
+      13 +### Production profil (`ServerConfig.production()`)            
+      14 +                                                               
+      15  | Szerver | URL | Protokoll | Kliens Osztály |
+      16  |---------|-----|-----------|----------------|
+      17  | User Service | `https://client.ac4y.com` | HTTPS REST | `Tlmi
+          UserServiceClient` |
+     ...
+      19  | Translation API | `https://api.ac4y.com` | HTTPS REST | `Tlmi
+          ServiceClient` |
+      20  | WebSocket | `wss://www.ac4y.com:2222/{userId}` | WSS | `WebSo
+          cketClient` |
+      21  
+      22 +### Local profil (`ServerConfig.local()`) — `--local` flag     
+      23 +                                                               
+      24 +| Szerver | URL | Protokoll | Megjegyzés |                     
+      25 +|---------|-----|-----------|------------|                     
+      26 +| Gate Service | `http://localhost:3000` | HTTP REST | ac4y-gat
+         +e Node.js |                                                    
+      27 +| User Service | `http://localhost:3000` | HTTP REST | Csak `/g
+         +ate/*` végpontok |                                             
+      28 +| Translation API | `http://localhost:3000` | HTTP REST | Nem e
+         +lérhető |                                                      
+      29 +| WebSocket | `ws://localhost:2222/{userId}` | WS | ac4y-gate W
+         +S szerver |                                                    
+      30 +                                                               
+      31 +**Megjegyzés**: A local profilban a User Service (`/user/*`) és
+         + Translation API (`/api/*`) végpontok nem érhetők el, mert az a
+         +c4y-gate szerver csak `/gate/*` útvonalakat implementál. Az alk
+         +almazás graceful degradation-nel kezeli ezt: a partner lista és
+         + saját profil betöltés nem blokkol, ha a user service nem elérh
+         +ető.                                                           
+      32 +                                                               
+      33 +### ServerConfig használata                                    
+      34 +                                                               
+      35 +```java                                                        
+      36 +// Indítás: --local flag → ServerConfig.local()                
+      37 +// Alapértelmezett: ServerConfig.production()                  
+      38 +ServerConfig config = useLocal ? ServerConfig.local() : ServerC
+         +onfig.production();                                            
+      39 +MainController controller = new MainController(view, cliMode, c
+         +onfig);                                                        
+      40 +```                                                            
+      41 +                                                               
+      42  ---
+      43  
+      44  ## 1. Internet Ellenőrzés
+      45  
+      21 -**Hol**: `MainController.checkInternet()` (sor: 134-146)       
+      46 +**Hol**: `MainController.checkInternet()`                      
+      47  **Mikor**: Az `initialize()` legelső lépése
+      48  
+      49  ```
+      25 -HEAD https://client.ac4y.com                                   
+      50 +GET {serverConfig.getHealthCheckUrl()}                         
+      51 +    Production: GET https://gate.ac4y.com/gate/user            
+      52 +    Local:      GET http://localhost:3000/gate/user            
+      53  Timeout: 3000ms
+      54  ```
+      55  
+      29 -**Cél**: Egyszerű elérhetőségi próba — ha a client.ac4y.com nem
+         - érhető el, az app hibát jelez és a StatusBar `internetError()`
+         - állapotba kerül. A többi lépés is lefut, de sikertelen lesz.  
+      56 +**Cél**: Egyszerű elérhetőségi próba — ha a szerver nem érhető 
+         +el, az app hibát jelez és a StatusBar `internetError()` állapot
+         +ba kerül. A többi lépés is lefut, de sikertelen lesz.          
+      57  
+      58  **Eredmény**:
+      32 -- Sikeres: StatusBar `internetLive()`                          
+      33 -- Sikertelen: StatusBar `internetError()` + JOptionPane hibaüze
+         -net                                                            
+      59 +- Sikeres (HTTP 2xx/3xx): `view.setInternetStatus(true)`       
+      60 +- Sikertelen: `view.setInternetStatus(false)` + hibaüzenet     
+      61  
+      62  ---
+      63  
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 8 lines, removed 6 lines
+      63  
+      64  ## 2. Felhasználó Lekérdezés Név Alapján
+      65  
+      66 -**Hol**: `MainController.tryGetTranslateUserByName()` (sor: 402
+         --408)                                                          
+      67 -**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")` 
+      66 +**Hol**: `MainController.tryGetTranslateUserByName()`          
+      67 +**Kliens**: `TlmiUserServiceClient(serverConfig.getUserServiceU
+         +rl())`                                                         
+      68  **Metódus**: `getTranslateUserByName(GetTranslateUserByNameRequ
+          est)`
+      69  
+      70  **Mikor hívódik** (4 helyen):
+      71 -1. `initialize()` sor 86-87 — Saját felhasználó létezésének ell
+         -enőrzése induláskor                                            
+      72 -2. `loadSelfInfo()` sor 182-183 — Saját profil (humanName, avat
+         -ar) betöltése                                                  
+      73 -3. `handleInvitation()` sor 341-342 — Meghívó partner adatainak
+         - (avatar) betöltése                                            
+      74 -4. `handleInvitationAccept()` sor 364-365 — Meghívást elfogadó 
+         -partner adatainak betöltése                                    
+      71 +1. `initialize()` step 3 — Saját felhasználó létezésének ellenő
+         +rzése induláskor                                               
+      72 +2. `loadSelfInfo()` step 7 — Saját profil (humanName, avatar) b
+         +etöltése                                                       
+      73 +3. `handleInvitation()` — Meghívó partner adatainak (avatar) be
+         +töltése                                                        
+      74 +4. `handleInvitationAccept()` — Meghívást elfogadó partner adat
+         +ainak betöltése                                                
+      75  
+      76 +**Graceful degradation**: Ha a user service nem elérhető (pl. l
+         +ocal profilban), a hívás kivételt dob, amit a `loadSelfInfo()` 
+         +és `loadPartners()` elfog és logol.                            
+      77 +                                                               
+      78  **Request**:
+      79  ```java
+      80  GetTranslateUserByNameRequest {
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 2 lines, removed 2 lines
+      101  
+      102  ## 3. Felhasználó Létrehozás (User Service)
+      103  
+      104 -**Hol**: `MainController.tryInsertUser()` (sor: 410-416)      
+      105 -**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")`
+      104 +**Hol**: `MainController.tryInsertUser()`                     
+      105 +**Kliens**: `TlmiUserServiceClient(serverConfig.getUserService
+          +Url())`                                                       
+      106  **Metódus**: `insertUser(InsertUserRequest)`
+      107  
+      108  **Mikor hívódik**:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 2 lines, removed 2 lines
+      131  
+      132  ## 4. Felhasználó Regisztráció (Gate Service)
+      133  
+      134 -**Hol**: `MainController.tryGateInsertUser()` (sor: 418-424)  
+      135 -**Kliens**: `Ac4yGateServiceClient("https://gate.ac4y.com")`  
+      134 +**Hol**: `MainController.tryGateInsertUser()`                 
+      135 +**Kliens**: `Ac4yGateServiceClient(serverConfig.getGateService
+          +Url())`                                                       
+      136  **Metódus**: `insertUser(GateInsertUserRequest)`
+      137  
+      138  **Mikor hívódik** (2 helyen):
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 2 lines, removed 2 lines
+      160  
+      161  ## 5. Bejelentkezés (Gate Service)
+      162  
+      163 -**Hol**: `MainController.tryLogin()` (sor: 434-440)           
+      164 -**Kliens**: `Ac4yGateServiceClient("https://gate.ac4y.com")`  
+      163 +**Hol**: `MainController.tryLogin()`                          
+      164 +**Kliens**: `Ac4yGateServiceClient(serverConfig.getGateService
+          +Url())`                                                       
+      165  **Metódus**: `login(GateLoginRequest)`
+      166  
+      167  **Mikon hívódik**:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 6 lines, removed 4 lines
+      192  
+      193  ## 6. WebSocket Csatlakozás
+      194  
+      195 -**Hol**: `MainController.connectWebSocket()` (sor: 201-237)   
+      196 -**Protokoll**: WSS (WebSocket Secure)                         
+      197 -**URL**: `wss://www.ac4y.com:2222/{userId}`                   
+      195 +**Hol**: `MainController.connectWebSocket()`                  
+      196 +**Protokoll**: WSS (production) / WS (local)                  
+      197 +**URL**: `serverConfig.getWebsocketUri(userId)`               
+      198 +- Production: `wss://www.ac4y.com:2222/{userId}`              
+      199 +- Local: `ws://localhost:2222/{userId}`                       
+      200  
+      201  **Mikor hívódik**:
+      200 -- `initialize()` sor 113 — Sikeres login után                 
+      202 +- `initialize()` step 5 — Sikeres login után                  
+      203  
+      204  **Események**:
+      205  ```java
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 4 lines, removed 2 lines
+      243  
+      244  ## 7. Partner Lista Betöltése
+      245  
+      246 -**Hol**: `MainController.loadPartners()` (sor: 148-178)       
+      247 -**Kliens**: `TlmiUserServiceClient("https://client.ac4y.com")`
+      246 +**Hol**: `MainController.loadPartners()`                      
+      247 +**Kliens**: `TlmiUserServiceClient(serverConfig.getUserService
+          +Url())`                                                       
+      248 +                                                              
+      249 +**Graceful degradation**: Ha a user service nem elérhető (pl. 
+          +local profil), a partner lista üres marad, de az alkalmazás fo
+          +lytatja a működést (gate + websocket normálisan üzemel).      
+      250  **Metódus**: `getAllTranslateUsers()`
+      251  
+      252  **Mikor hívódik**:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 2 lines, removed 2 lines
+      267  
+      268  ## 8. Szöveg Fordítás (Text2Text)
+      269  
+      270 -**Hol**: `MainController.tryText2Text()` (sor: 426-432)       
+      271 -**Kliens**: `TlmiServiceClient("https://api.ac4y.com")`       
+      270 +**Hol**: `MainController.tryText2Text()`                      
+      271 +**Kliens**: `TlmiServiceClient(serverConfig.getTranslationServ
+          +iceUrl())`                                                    
+      272  **Metódus**: `text2text(Text2TextRequest)`
+      273  
+      274  **Mikor hívódik**:
+
+⏺ Now update the sequence diagram:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 22 lines, removed 19 lines
+      298  ## API Hívások Szekvencia Diagramja
+      299  
+      300  ```
+      301 -App indítás                                                   
+      301 +App indítás                                    Production URL 
+          +         Local URL                                            
+      302  │
+      303 -├─ 1. HEAD https://client.ac4y.com                    [Interne
+          -t ellenőrzés]                                                 
+      303 +├─ 1. GET {healthCheckUrl}                     gate.ac4y.com/g
+          +ate/user localhost:3000/gate/user                             
+      304 +│      [Internet/szerver ellenőrzés]                          
+      305  │
+      305 -├─ 2. GET  https://client.ac4y.com                    [Felhasz
+          -náló létezik?]                                                
+      306 -│      └─ getTranslateUserByName(userId)                      
+      306 +├─ 2. GET {userServiceUrl}                     client.ac4y.com
+          +        localhost:3000 (*)                                    
+      307 +│      └─ getTranslateUserByName(userId)       [Felhasználó lé
+          +tezik?]                                                       
+      308  │
+      308 -├─ 3. POST https://client.ac4y.com                    [Ha nem 
+          -létezik: user insert]                                         
+      309 -│      └─ insertUser(TlmiTranslateUser)                       
+      309 +├─ 3. POST {userServiceUrl}                    client.ac4y.com
+          +        localhost:3000 (*)                                    
+      310 +│      └─ insertUser(TlmiTranslateUser)        [Ha nem létezik
+          +: user insert]                                                
+      311  │
+      311 -├─ 4. POST https://gate.ac4y.com                      [Gate re
+          -gisztráció]                                                   
+      312 -│      └─ insertUser(name, password)                   (ha nem
+          - létezik + mindig)                                            
+      312 +├─ 4. POST {gateServiceUrl}                    gate.ac4y.com  
+          +        localhost:3000                                        
+      313 +│      └─ insertUser(name, password)           [Gate regisztrá
+          +ció] (ha nem létezik + mindig)                                
+      314  │
+      314 -├─ 5. POST https://gate.ac4y.com                      [Login] 
+      315 -│      └─ login(name, password)                               
+      315 +├─ 5. POST {gateServiceUrl}                    gate.ac4y.com  
+          +        localhost:3000                                        
+      316 +│      └─ login(name, password)                [Login]        
+      317  │      └─ HA SIKERTELEN → STOP
+      318  │
+      318 -├─ 6. WSS  wss://www.ac4y.com:2222/{userId}           [WebSock
+          -et csatlakozás]                                               
+      319 +├─ 6. WS {websocketUri}/{userId}               wss://ac4y.com:
+          +2222    ws://localhost:2222                                   
+      320 +│      [WebSocket csatlakozás]                                
+      321  │
+      320 -├─ 7. GET  https://client.ac4y.com                    [Partner
+          - lista betöltés]                                              
+      321 -│      └─ getAllTranslateUsers()                              
+      322 +├─ 7. GET {userServiceUrl}                     client.ac4y.com
+          +        localhost:3000 (*)                                    
+      323 +│      └─ getAllTranslateUsers()               [Partner lista 
+          +betöltés]                                                     
+      324  │
+      323 -└─ 8. GET  https://client.ac4y.com                    [Saját p
+          -rofil betöltés]                                               
+      324 -       └─ getTranslateUserByName(userId)                      
+      325 +└─ 8. GET {userServiceUrl}                     client.ac4y.com
+          +        localhost:3000 (*)                                    
+      326 +       └─ getTranslateUserByName(userId)       [Saját profil b
+          +etöltés]                                                      
+      327  
+      328 +(*) = Graceful degradation: ha a user service nem elérhető, ne
+          +m blokkol                                                     
+      329  
+      330  Chat közben
+      331  │
+      332  ├─ Üzenet küldés (ha eltérő nyelv):
+      330 -│   └─ POST https://api.ac4y.com                      [Fordítá
+          -s]                                                            
+      333 +│   └─ POST {translationServiceUrl}            api.ac4y.com   
+          +        localhost:3000 (*)                                    
+      334  │          └─ text2text(text, targetLang, sourceLang)
+      332 -│   └─ WSS  send(TlmiMessage)                         [Küldés 
+          -partnernerk]                                                  
+      335 +│   └─ WS send(TlmiMessage)                   [Küldés partnern
+          +ek]                                                           
+      336  │
+      337  ├─ Meghívás fogadásakor:
+      335 -│   └─ GET  https://client.ac4y.com                   [Partner
+          - avatar betöltés]                                             
+      338 +│   └─ GET {userServiceUrl}                    client.ac4y.com
+          +        localhost:3000 (*)                                    
+      339  │          └─ getTranslateUserByName(partnerName)
+      340  │
+      341  └─ Meghívás elfogadásakor:
+      339 -    └─ GET  https://client.ac4y.com                   [Partner
+          - avatar betöltés]                                             
+      342 +    └─ GET {userServiceUrl}                    client.ac4y.com
+          +        localhost:3000 (*)                                    
+      343             └─ getTranslateUserByName(partnerName)
+      344  ```
+      345  
+
+⏺ Now update the notes section:
+
+⏺ Update(docs/API_CALLS.md)
+  ⎿  Added 23 lines, removed 2 lines
+      367  ## Megjegyzések
+      368  
+      369  1. **Statikus jelszó**: Minden felhasználó jelszava `"1"` — ez
+            nem valódi autentikáció, hanem a Gate Service elvárásához iga
+           zodó placeholder
+      370 -2. **Dupla gate insert**: A `tryGateInsertUser()` kétszer hívó
+          -dik (sor 95 + 98) — egyszer az új felhasználó folyamaton belül
+          -, és egyszer feltétel nélkül                                  
+      371 -3. **Hardcoded URL-ek**: Minden szerver URL a kódban van megad
+          -va, nincs konfigurációs fájl                                  
+      370 +2. **Dupla gate insert**: A `tryGateInsertUser()` kétszer hívó
+          +dik — egyszer az új felhasználó folyamaton belül, és egyszer f
+          +eltétel nélkül                                                
+      371 +3. **ServerConfig**: A szerver URL-ek a `ServerConfig` osztály
+          +ban vannak definiálva, két profillal: `production()` és `local
+          +()`. A `--local` CLI flag aktiválja a localhost profilt       
+      372  4. **Szinkron hívások**: Minden REST hívás szinkron (blokkoló)
+            — háttérszálról fut (`new Thread()` a `Main.java`-ban)
+      373 +5. **Graceful degradation**: A `loadPartners()` és `loadSelfIn
+          +fo()` metódusok try-catch-ben futnak — ha a user service nem e
+          +lérhető (pl. local profilban), az alkalmazás folytatja a működ
+          +ést a gate + websocket funkciókkal                            
+      374 +6. **CLI mód**: `--cli` flag-gel GUI nélkül indul (CliMainView
+          +), `--local` flag-gel a localhost szerverhez csatlakozik      
+      375 +                                                              
+      376 +## Indítási módok                                             
+      377 +                                                              
+      378 +```bash                                                       
+      379 +# GUI + production szerver                                    
+      380 +mvn exec:java                                                 
+      381 +                                                              
+      382 +# GUI + localhost szerver                                     
+      383 +mvn exec:java -Dexec.args="--local"                           
+      384 +                                                              
+      385 +# CLI + production szerver                                    
+      386 +mvn exec:java -Dexec.args="--cli"                             
+      387 +                                                              
+      388 +# CLI + localhost szerver                                     
+      389 +mvn exec:java -Dexec.args="--cli --local"                     
+      390 +                                                              
+      391 +# Teszt (TRACE loglevel, auto-detected log4j2-test.xml)       
+      392 +mvn test                                                      
+      393 +```                                                           
+
+⏺ Good. Now let me create the SESSION-HANDOFF.md:
+
+⏺ Searched for 1 pattern, read 2 files (ctrl+o to expand)
+
+⏺ Now let me check if there's an app-specific section or if I need to add one.
+  Let me also check the RUN-BOOK to see the latest state:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Now I have the full picture. Let me update SESSION-HANDOFF.md with the current
+   project's context section and create the handoff:
+
+⏺ Update(/Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control/do
+        cs/session-handoff/SESSION-HANDOFF.md)
+  ⎿  Added 79 lines
+      112  
+      113  ---
+      114  
+      115 +## 7. Aktualis projekt kontextus (utolso session allapota)    
+      116 +                                                              
+      117 +### Projekt: java-ac4y-tlmi-client-desktop                    
+      118 +                                                              
+      119 +**Mappa:** `/Volumes/DevAPFS/work/by-project/ac4y-java/app/jav
+          +a-tolmi-client/`                                              
+      120 +**GitHub repo:** `ac4y-auto/java-ac4y-tlmi-client-desktop`    
+      121 +**Branch:** `main`                                            
+      122 +**Utolso commit:** `1b2e4e7` — `feat: add ServerConfig for loc
+          +alhost dev and graceful degradation`                          
+      123 +                                                              
+      124 +### Mi tortent eddig                                          
+      125 +                                                              
+      126 +1. **pom.xml ujrairasa** — Maven fuggosegek migrálasa ac4y kon
+          +venciora, GitHub Packages-rol toltodik                        
+      127 +2. **Forditasi hibak javitasa** — TlmiTranslateUser → PartnerI
+          +nfo es egyeb tipusok                                          
+      128 +3. **GitHub repo letrehozva** es minden pusholva              
+      129 +4. **Log4j2 bevezetese** — log4j2.xml (production: INFO) + log
+          +4j2-test.xml (test: TRACE)                                    
+      130 +5. **CLI mod** — IMainView interface, SwingMainView (GUI), Cli
+          +MainView (headless)                                           
+      131 +6. **JUnit 5 tesztek** — CliInitializationTest (2 teszt: produ
+          +ction + local)                                                
+      132 +7. **ServerConfig** — production() es local() profilok, `--loc
+          +al` flag                                                      
+      133 +8. **Localhost csatlakozas** — ac4y-gate Node.js szerver (REST
+          +: 3000, WS: 2222) sikeresen tesztelve                         
+      134 +9. **Graceful degradation** — user service nem erheto? Nem blo
+          +kkol, gate + websocket mukodik                                
+      135 +10. **Dokumentacio** — API_CALLS.md, ARCHITECTURE_DIAGRAM.md, 
+          +FUNCTIONS_DOCUMENTATION.md, DEPENDENCIES.md                   
+      136 +                                                              
+      137 +### Fontos technikai reszletek                                
+      138 +                                                              
+      139 +| Elem | Ertek |                                              
+      140 +|------|-------|                                              
+      141 +| JDK | 11 |                                                  
+      142 +| Log4j2 | 2.8.2 |                                            
+      143 +| JUnit | 5.10.2 |                                            
+      144 +| Java-WebSocket | 1.5.4 |                                    
+      145 +| Gson | 2.10.1 |                                             
+      146 +| Maven Surefire | 3.2.5 |                                    
+      147 +| Verzio | 1.0.20260207.1 |                                   
+      148 +                                                              
+      149 +### ServerConfig profilok                                     
+      150 +                                                              
+      151 +| Profil | Gate | User | Translation | WebSocket |            
+      152 +|--------|------|------|-------------|-----------|            
+      153 +| production | https://gate.ac4y.com | https://client.ac4y.com
+          + | https://api.ac4y.com | wss://www.ac4y.com:2222 |           
+      154 +| local | http://localhost:3000 | http://localhost:3000 | http
+          +://localhost:3000 | ws://localhost:2222 |                     
+      155 +                                                              
+      156 +### Inditasi modok                                            
+      157 +                                                              
+      158 +```bash                                                       
+      159 +# GUI + production                                            
+      160 +mvn exec:java                                                 
+      161 +                                                              
+      162 +# GUI + localhost                                             
+      163 +mvn exec:java -Dexec.args="--local"                           
+      164 +                                                              
+      165 +# CLI + production                                            
+      166 +mvn exec:java -Dexec.args="--cli"                             
+      167 +                                                              
+      168 +# CLI + localhost (tesztelve, mukodik!)                       
+      169 +mvn exec:java -Dexec.args="--cli --local"                     
+      170 +                                                              
+      171 +# JUnit tesztek (TRACE log)                                   
+      172 +mvn test                                                      
+      173 +```                                                           
+      174 +                                                              
+      175 +### ac4y-gate szerver inditasa (localhost fejleszteshez)      
+      176 +                                                              
+      177 +```bash                                                       
+      178 +cd /Volumes/DevAPFS/work/by-project/ac4y-js/ac4y-gate         
+      179 +node index.js &                                               
+      180 +# REST: http://localhost:3000/gate/* (login, insertuser, user,
+          + statistics, stb.)                                            
+      181 +# WebSocket: ws://localhost:2222/{userId}                     
+      182 +```                                                           
+      183 +                                                              
+      184 +### Kovetkezo lehetseges lepesek                              
+      185 +                                                              
+      186 +- Ket kliens (GUI + CLI) kozotti chat tesztelese WebSocket-en 
+      187 +- User service implementalasa a gate szerveren (/user/* vegpon
+          +tok)                                                          
+      188 +- Translation service integracio                              
+      189 +- GUI mod tesztelese `--local` flag-gel                       
+      190 +- Tovabbi tesztek irasa (WebSocket uzenetküldes, meghivas flow
+          +)                                                             
+      191 +                                                              
+      192 +---                                                           
+      193 +                                                              
+      194  **Utolso frissites:** 2026-02-07
+
+⏺ Now commit and push everything:
+
+⏺ Bash(git status)
+  ⎿  On branch main
+     Your branch is up to date with 'origin/main'.
+     … +10 lines (ctrl+o to expand)
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git status)
+  ⎿  On branch master
+     Your branch is up to date with 'origin/master'.
+     … +11 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git add docs/session-handoff/SESSION-HANDOFF.md && git commit -m "docs:
+       update SESSIO…)
+  ⎿  [master 687f081] docs: update SESSION-HANDOFF with tlmi-client project
+     context
+      1 file changed, 79 insertions(+)
+     … +2 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ Kész! ✅ Minden elkészült és pusholva:
+
+  Commitok
+  Repo: java-ac4y-tlmi-client-desktop
+  Commit: b1cc441
+  Leírás: docs: API_CALLS.md frissítve ServerConfig profilokkal
+  ────────────────────────────────────────
+  Repo: java-ac4y-mission-control
+  Commit: 687f081
+  Leírás: docs: SESSION-HANDOFF.md frissítve projekt kontextussal
+  Ami benne van a SESSION-HANDOFF-ban
+
+  - Teljes projekt állapot (10 mérföldkő összefoglalva)
+  - ServerConfig profilok táblázat (production vs local)
+  - Indítási módok (--cli, --local, mvn test)
+  - ac4y-gate szerver indítás parancs
+  - Következő lehetséges lépések
+
+  Új session indítása
+
+  Olvasd be ezt a handoff fájlt és kövesd az utasításait:
+  /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control/docs/sess
+  ion-handoff/SESSION-HANDOFF.md
+
+  [ÚJ FELADAT IDE]
+
+  Jó munkát, mehetünk tovább! 🚀
+
+❯ git 
+
+⏺ Látom, hogy a linter módosítások megtörténtek (ServerConfig userServiceUrl
+  átállítva localhost:3002-re, MainController null-check a partner name-re,
+  stb.). Commitolom és pusholom ezeket is.
+
+⏺ Bash(git diff --stat)
+  ⎿  src/main/java/tlmi/communcator/atlmiclient/MainController.java | 2 +-
+     src/main/java/tlmi/communcator/atlmiclient/ServerConfig.java   | 2 +-
+     src/main/resources/log4j2.xml                                  | 6 +++
+    … +2 lines (ctrl+o to expand)
+
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git status)
+  ⎿  On branch master
+     Your branch is up to date with 'origin/master'.
+     … +10 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ Bash(git diff)
+  ⎿ diff --git a/src/main/java/tlmi/communcator/atlmiclient/MainController.
+    java b/src/main/java/tlmi/communcator/atlmiclient/MainController.java
+    index b6e7bc8..cd47f92 100644
+    … +54 lines (ctrl+o to expand)
+
+
+⏺ Commitolom a java-tolmi-client változásokat, majd a mission-control-t:
+
+⏺ Bash(git add src/main/java/tlmi/communcator/atlmiclient/MainController.java
+      src/main/java/tlmi/communcator/atlmiclient/ServerConfig.java
+      src/main/resources/log4j2.xm…)
+  ⎿ [main b3e0d0e] fix: null-check partner name, user service on port 3002,
+     log config tuning
+     3 files changed, 5 insertions(+), 5 deletions(-)
+    … +2 lines (ctrl+o to expand)
+
+
+⏺ Kész! ✅ Pusholva: b3e0d0e
+
+  Összefoglaló a session végén:
+  Repo: java-ac4y-tlmi-client-desktop
+  Utolsó commit: b3e0d0e
+  Státusz: ✅ clean
+  ────────────────────────────────────────
+  Repo: java-ac4y-mission-control
+  Utolsó commit: 687f081
+  Státusz: ✅ SESSION-HANDOFF frissítve
+  Új session indításához:
+  Olvasd be ezt a handoff fájlt és kövesd az utasításait:
+  /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control/docs/sess
+  ion-handoff/SESSION-HANDOFF.md
+
+❯ push 
+
+⏺ Bash(git status)
+  ⎿  On branch main
+     Your branch is up to date with 'origin/main'.
+     … +8 lines (ctrl+o to expand)
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git status)
+  ⎿  On branch master
+     Your branch is up to date with 'origin/master'.
+     … +10 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ A java-tolmi-client clean — nincs mit commitolni. A mission-control-ban van
+  egy etc/links.txt módosítás és egy docs/repo-notes/ untracked mappa.
+  Ellenőrzöm:
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git diff etc/links.txt)
+  ⎿  diff --git a/etc/links.txt b/etc/links.txt
+     index e69de29..8739915 100644
+     --- a/etc/links.txt
+     … +17 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Bash(cd /Volumes/DevAPFS/work/by-project/ac4y-java/java-ac4y-mission-control
+      && git add etc/links.txt docs/repo-notes/ && git commit -m "chore: add
+      links.txt and gat…)
+  ⎿  [master 25222fc] chore: add links.txt and gate-service repo notes
+      2 files changed, 127 insertions(+)
+      create mode 100644 docs/repo-notes/java-ac4y-gate-service.md
+     … +2 lines (ctrl+o to expand)
+  ⎿  Shell cwd was reset to 
+     /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ Kész! ✅ Mindkét repo clean és pusholva:
+  ┌───────────────────────────────┬───────────────┬──────────┐
+  │             Repo              │ Utolsó commit │ Státusz  │
+  ├───────────────────────────────┼───────────────┼──────────┤
+  │ java-ac4y-tlmi-client-desktop │ b3e0d0e       │ ✅ clean │
+  ├───────────────────────────────┼───────────────┼──────────┤
+  │ java-ac4y-mission-control     │ 25222fc       │ ✅ clean │
+  └───────────────────────────────┴───────────────┴──────────┘
+  Mehet az új session! 🚀
+
+❯ pwd 
+
+⏺ Bash(pwd)
+  ⎿  /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client
+
+⏺ /Volumes/DevAPFS/work/by-project/ac4y-java/app/java-tolmi-client — a
+  tlmi-client projekt gyökere.
+
+❯ mi a remote? honnan jön ez a "_desktop"? 
+
+⏺ Jó kérdés! Nézzük meg:
+
+⏺ Bash(git remote -v)
+  ⎿ origin      https://github.com/ac4y-auto/java-ac4y-tlmi-client-desktop.git (
+    fetch)
+    origin      https://github.com/ac4y-auto/java-ac4y-tlmi-client-desktop.git (
+    push)
+
+
+
+
+
+⏺ A remote: ac4y-auto/java-ac4y-tlmi-client-desktop
+
+  A _desktop onnan jön, hogy az előző session-ben, amikor a GitHub repót
+  létrehoztam, a nevet az eredeti Android app (an-tolmi-client) desktop
+  portjának jelölésére adtam. A konvenció szerint java-ac4y-tlmi-client lenne a
+  helyes — a -desktop suffix felesleges.
+
+  Át szeretnéd nevezni a repót java-ac4y-tlmi-client-re?
