@@ -36,7 +36,7 @@ public class ServerConfig {
     public static ServerConfig local() {
         return new ServerConfig(
                 "http://localhost:3000",
-                "http://localhost:3000",
+                "http://localhost:3002",
                 "http://localhost:3000",
                 "ws://localhost:2222"
         );

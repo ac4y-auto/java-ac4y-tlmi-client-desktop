@@ -184,7 +184,7 @@ public class MainController {
 
             int count = 0;
             for (TlmiTranslateUser partner : allUsersResponse.list) {
-                if (!partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
+                if (partner.getName() != null && !partner.getName().equals(env.getUserId().get()) && partner.getAvatar() != null) {
                     view.addPartner(partner.getName(), partner.getHumanName(), partner.getAvatar());
                     count++;
                 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
     <Properties>
-        <Property name="basePath">./logs</Property>
+        <Property name="basePath">./log</Property>
     </Properties>
 
     <Appenders>
@@ -15,9 +15,9 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="tlmi.communcator" level="info" />
+        <Logger name="tlmi.communcator" level="trace" />
 
-        <Root level="info">
+        <Root level="trace">
             <AppenderRef ref="STDOUT" />
             <AppenderRef ref="FILE" />
         </Root>
